@@ -21,7 +21,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 onClick={() => router.push("/")}
                 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent cursor-pointer"
               >
-                Catoff
+                DuelBet
               </h1>
             </div>
             <WalletMultiButton />
@@ -35,7 +35,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="container mx-auto px-4 py-6">
           <div className="text-center text-gray-400">
             <p>
-              &copy; {new Date().getFullYear()} Catoff. All rights reserved.
+              &copy; {new Date().getFullYear()} DuelBet. All rights reserved.
             </p>
           </div>
         </div>

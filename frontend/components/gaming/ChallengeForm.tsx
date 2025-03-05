@@ -1,25 +1,17 @@
 import React, { useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useChallenge } from "../../hooks/useChallenge";
-import Button from "../common/Button";
-interface MatchData {
-  matchId: string;
-  playerStats: {
-    kills: number;
-    deaths: number;
-    assists: number;
-    championId: number;
-    win: boolean;
-  };
-}
+import { Button } from "../common/Button";
+import { Match, LichessMatchStats } from "@/types"; // Updated to Lichess types
 
 interface ChallengeFormProps {
   onChallengeCreated?: (challengeId: string) => void;
-  match: MatchData;
+  match?: Match; // Updated to Lichess Match
 }
 
 const ChallengeForm: React.FC<ChallengeFormProps> = ({
   onChallengeCreated,
+  match, // Optional Lichess match to pre-fill stats
 }) => {
   const wallet = useWallet();
   const { createChallenge } = useChallenge();
@@ -47,17 +39,24 @@ const ChallengeForm: React.FC<ChallengeFormProps> = ({
     try {
       const challengeId = await createChallenge({
         wagerAmount: parseFloat(wagerAmount),
-        stats: {
-          matchId: "", // Add appropriate matchId value
-          playerStats: {
-            kills: 0,
-            deaths: 0,
-            assists: 0,
-            championId: 0,
-            win: false,
-          },
-        },
-        riotId: "", // Add appropriate riotId value
+        lichessUsername: "", // Default empty, update as needed (e.g., from match or user input)
+        stats: match
+          ? {
+              matchId: match.id,
+              playerStats: {
+                result: match.result,
+                variant: match.variant,
+                speed: match.gameType,
+              },
+            }
+          : {
+              matchId: "", // Default empty match ID
+              playerStats: {
+                result: "draw", // Default to draw, update with actual match data
+                variant: "Standard",
+                speed: "Unknown",
+              },
+            },
       });
       if (challengeId) {
         onChallengeCreated?.(challengeId);
@@ -97,7 +96,6 @@ const ChallengeForm: React.FC<ChallengeFormProps> = ({
 
         <Button
           type="submit"
-          isLoading={isLoading}
           disabled={!wallet.connected || isLoading}
           className="w-full"
         >

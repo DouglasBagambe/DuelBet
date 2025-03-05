@@ -1,5 +1,3 @@
-// frontend/components/gaming/PlayerSearch.tsx
-
 import React, { useState } from "react";
 import {
   Search,
@@ -16,33 +14,30 @@ import {
 } from "lucide-react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useChallenge } from "@/hooks/useChallenge";
-import { ChallengeData } from "@/types";
+import { ChallengeData, LichessMatchStats } from "@/types";
 import {
   CreateChallengeDialog,
   ChallengeList,
   ChallengeDetailsDialog,
 } from "./ChallengeComponents";
 
-const NEXT_PUBLIC_API_URL = "http://localhost:3001";
+const NEXT_PUBLIC_API_URL = "http://localhost:3001"; // Kept for potential backend integration
 
 interface Match {
   id: string;
   timestamp: number;
-  gameType: string;
-  result: "win" | "loss";
-  kills: number;
-  deaths: number;
-  assists: number;
+  gameType: string; // e.g., "Bullet", "Blitz", "Rapid"
+  result: "win" | "loss" | "draw";
+  variant: string; // e.g., "Standard", "Chess960"
 }
 
-interface RiotAccount {
-  puuid: string;
-  gameName: string;
-  tagLine: string;
+interface LichessPlayer {
+  id: string;
+  username: string;
 }
 
 interface PlayerSearchProps {
-  onPlayerFound?: (playerData: RiotAccount) => void;
+  onPlayerFound?: (playerData: LichessPlayer) => void;
   onMatchesFound?: (matches: Match[]) => void;
   challenge?: ChallengeData;
   onChallengeComplete?: (winner: string) => void;
@@ -50,16 +45,12 @@ interface PlayerSearchProps {
 
 interface Challenge {
   id: string;
-  creator: string;
-  riotId: string;
+  creator: string; // Solana public key
+  lichessUsername: string;
   wagerAmount: number;
-  challenger?: string;
+  challenger?: string; // Solana public key
   isComplete?: boolean;
-  stats?: {
-    kills: number;
-    deaths: number;
-    assists: number;
-  };
+  stats?: LichessMatchStats;
 }
 
 const PlayerSearch: React.FC<PlayerSearchProps> = ({
@@ -70,15 +61,18 @@ const PlayerSearch: React.FC<PlayerSearchProps> = ({
 }) => {
   const wallet = useWallet();
   const {
+    createChallenge,
+    acceptChallenge,
     completeChallenge,
     loading: challengeLoading,
     error: challengeError,
   } = useChallenge();
   const [playerName, setPlayerName] = useState("");
-  const [tagline, setTagline] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [foundPlayer, setFoundPlayer] = useState<RiotAccount | null>(null);
+  const [foundPlayer, setFoundPlayer] = useState<LichessPlayer | undefined>(
+    undefined
+  );
   const [isLoadingMatches, setIsLoadingMatches] = useState(false);
   const [matchError, setMatchError] = useState("");
   const [matches, setMatches] = useState<Match[]>([]);
@@ -89,12 +83,42 @@ const PlayerSearch: React.FC<PlayerSearchProps> = ({
   const [selectedChallenge, setSelectedChallenge] = useState<Challenge>();
   const [challenges, setChallenges] = useState<Challenge[]>([]);
 
-  const handleCreateChallenge = (challengeData: Omit<Challenge, "id">) => {
-    const newChallenge = {
-      ...challengeData,
-      id: `CH_${Math.random().toString(36).substring(2, 9)}`,
-    };
-    setChallenges((prev) => [...prev, newChallenge]);
+  const handleCreateChallenge = async (
+    challengeData: Omit<Challenge, "id" | "creator" | "isComplete">
+  ) => {
+    if (!wallet.connected || !foundPlayer) {
+      setError("Wallet or player not connected/found");
+      return;
+    }
+
+    try {
+      const challengeId = await createChallenge({
+        wagerAmount: challengeData.wagerAmount,
+        lichessUsername: challengeData.lichessUsername,
+        stats: challengeData.stats || {
+          matchId: "",
+          playerStats: {
+            result: "draw",
+            variant: "Standard",
+            speed: "Unknown",
+          },
+        },
+      });
+
+      if (challengeId) {
+        const newChallenge = {
+          ...challengeData,
+          id: challengeId,
+          creator: wallet.publicKey!.toString(),
+          isComplete: false,
+        };
+        setChallenges((prev) => [...prev, newChallenge]);
+      }
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to create challenge"
+      );
+    }
   };
 
   const handleViewChallenge = (challenge: Challenge) => {
@@ -102,31 +126,55 @@ const PlayerSearch: React.FC<PlayerSearchProps> = ({
     setIsChallengeDetailsOpen(true);
   };
 
-  const handleAcceptChallenge = (challengeId: string) => {
-    setChallenges((prev) =>
-      prev.map((challenge) =>
-        challenge.id === challengeId
-          ? { ...challenge, challenger: wallet.publicKey?.toString() }
-          : challenge
-      )
-    );
+  const handleAcceptChallenge = async (challengeId: string) => {
+    if (!wallet.connected) {
+      setError("Wallet not connected");
+      return;
+    }
+
+    try {
+      const challengeToAccept = challenges.find((c) => c.id === challengeId);
+      if (!challengeToAccept) {
+        setError("Challenge not found");
+        return;
+      }
+
+      const success = await acceptChallenge({
+        challengeId,
+        wagerAmount: challengeToAccept.wagerAmount,
+        lichessUsername: challengeToAccept.lichessUsername,
+      });
+
+      if (success) {
+        setChallenges((prev) =>
+          prev.map((challenge) =>
+            challenge.id === challengeId
+              ? { ...challenge, challenger: wallet.publicKey?.toString() }
+              : challenge
+          )
+        );
+      }
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to accept challenge"
+      );
+    }
   };
 
   const handleSearch = async () => {
-    if (!playerName || !tagline) {
-      setError("Please enter both player name and tagline");
+    if (!playerName) {
+      setError("Please enter a Lichess username");
       return;
     }
 
     setIsLoading(true);
     setError("");
-    setFoundPlayer(null);
+    setFoundPlayer(undefined);
 
     try {
+      // Use the Fetch API instead of child_process exec
       const response = await fetch(
-        `${NEXT_PUBLIC_API_URL}/api/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(
-          playerName
-        )}/${encodeURIComponent(tagline)}`,
+        `https://lichess.org/api/user/${encodeURIComponent(playerName)}`,
         {
           headers: {
             Accept: "application/json",
@@ -135,26 +183,27 @@ const PlayerSearch: React.FC<PlayerSearchProps> = ({
       );
 
       if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error(
-            "Player not found. Please check the name and tagline."
-          );
-        }
-        throw new Error(`Failed to find player (Status: ${response.status})`);
+        throw new Error(
+          `Failed to find player: ${response.status} ${response.statusText}`
+        );
       }
 
-      const data: RiotAccount = await response.json();
-      setFoundPlayer(data);
-      onPlayerFound?.(data);
+      const playerData = (await response.json()) as LichessPlayer;
+      setFoundPlayer(playerData);
+      onPlayerFound?.(playerData);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to find player");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to find player. Please check the username."
+      );
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleFetchMatches = async () => {
-    if (!foundPlayer?.puuid) {
+    if (!foundPlayer?.id) {
       setMatchError("Player information is required");
       return;
     }
@@ -163,45 +212,52 @@ const PlayerSearch: React.FC<PlayerSearchProps> = ({
     setMatchError("");
 
     try {
+      // Use the Fetch API instead of child_process exec
       const response = await fetch(
-        `${NEXT_PUBLIC_API_URL}/api/lol/match/v5/matches/by-puuid/${encodeURIComponent(
-          foundPlayer.puuid
-        )}/ids?region=${encodeURIComponent(tagline)}`
+        `https://lichess.org/api/games/user/${encodeURIComponent(
+          foundPlayer.id
+        )}?max=5`,
+        {
+          headers: {
+            Accept: "application/json",
+          },
+        }
       );
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch matches (Status: ${response.status})`);
+        throw new Error(
+          `Failed to fetch matches: ${response.status} ${response.statusText}`
+        );
       }
 
-      const matchIds = await response.json();
-      const matchDetailsPromises = matchIds.map(async (matchId: string) => {
-        const matchResponse = await fetch(
-          `${NEXT_PUBLIC_API_URL}/api/lol/match/v5/matches/${matchId}?region=${encodeURIComponent(
-            tagline
-          )}`
-        );
-        if (!matchResponse.ok) {
-          throw new Error(
-            `Failed to fetch match details (Status: ${matchResponse.status})`
-          );
-        }
-        const matchData = await matchResponse.json();
-        const participant = matchData.info.participants.find(
-          (p: any) => p.puuid === foundPlayer.puuid
-        );
+      const text = await response.text();
+      const lines = text.split("\n").filter((line) => line.trim());
 
-        return {
-          id: matchData.metadata.matchId,
-          timestamp: matchData.info.gameCreation,
-          gameType: matchData.info.gameMode,
-          result: participant.win ? "win" : "loss",
-          kills: participant.kills,
-          deaths: participant.deaths,
-          assists: participant.assists,
-        };
-      });
+      if (lines.length === 0) {
+        throw new Error("No recent games found for this player.");
+      }
 
-      const matchDetails = await Promise.all(matchDetailsPromises);
+      // Parse NDJSON (newline-delimited JSON) from Lichess
+      const games = lines
+        .map((line) => {
+          try {
+            return JSON.parse(line);
+          } catch (e) {
+            console.error("Error parsing match line:", e, "Line:", line);
+            return null;
+          }
+        })
+        .filter((game) => game !== null);
+
+      // Transform Lichess games into Match format
+      const matchDetails: Match[] = games.map((game: any) => ({
+        id: game.id,
+        timestamp: game.createdAt || game.lastMoveAt || Date.now(),
+        gameType: game.speed || "Unknown",
+        result: determineResult(game, foundPlayer.id),
+        variant: game.variant || "Standard",
+      }));
+
       setMatches(matchDetails);
       onMatchesFound?.(matchDetails);
     } catch (err) {
@@ -214,25 +270,51 @@ const PlayerSearch: React.FC<PlayerSearchProps> = ({
     }
   };
 
+  // Helper function to determine match result from player's perspective
+  const determineResult = (
+    game: any,
+    playerId: string
+  ): "win" | "loss" | "draw" => {
+    if (!game.winner) return "draw";
+
+    // Check if the player was white or black
+    const isPlayerWhite = game.players?.white?.user?.id === playerId;
+    const isPlayerBlack = game.players?.black?.user?.id === playerId;
+
+    if (isPlayerWhite && game.winner === "white") return "win";
+    if (isPlayerBlack && game.winner === "black") return "win";
+    return "loss";
+  };
+
   const handleCompleteChallenge = async (winner: string) => {
-    if (!challenge) return;
+    if (!challenge || !challenge.id) return;
 
     try {
       await completeChallenge({
         challengeId: challenge.id,
         winner,
-        stats: challenge.stats!,
+        stats: challenge.stats || {
+          matchId: "",
+          playerStats: {
+            result: "draw",
+            variant: "Standard",
+            speed: "Unknown",
+          },
+        },
       });
 
       onChallengeComplete?.(winner);
     } catch (error) {
       console.error("Failed to complete challenge:", error);
+      setError(
+        error instanceof Error ? error.message : "Failed to complete challenge"
+      );
     }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
-      if (!isLoading && playerName && tagline) {
+      if (!isLoading && playerName) {
         handleSearch();
       }
     }
@@ -244,8 +326,11 @@ const PlayerSearch: React.FC<PlayerSearchProps> = ({
 
   const isCreator = wallet.publicKey?.toString() === challenge?.creator;
   const isChallenger = wallet.publicKey?.toString() === challenge?.challenger;
-  const canComplete =
-    (isCreator || isChallenger) && challenge && !challenge.isComplete;
+  const canComplete = !!(
+    (isCreator || isChallenger) &&
+    challenge &&
+    !challenge.isComplete
+  );
 
   return (
     <div className="min-h-screen bg-gray-900">
@@ -262,7 +347,7 @@ const PlayerSearch: React.FC<PlayerSearchProps> = ({
             <div className="flex items-center gap-4 bg-gray-700 px-4 py-2 rounded-lg">
               <User className="w-5 h-5 text-blue-400" />
               <span className="text-white font-medium">
-                {foundPlayer.gameName}#{foundPlayer.tagLine}
+                {foundPlayer.username}
               </span>
             </div>
           )}
@@ -270,102 +355,84 @@ const PlayerSearch: React.FC<PlayerSearchProps> = ({
       </nav>
 
       {/* Main Content */}
-
       <div className="max-w-7xl mx-auto p-6">
         <div className="grid grid-cols-12 gap-6">
           <div className="col-span-12 lg:col-span-4 space-y-6">
             {/* Left Column - Player Search */}
-            <div className="col-span-12 lg:col-span-4 space-y-6">
-              {/* Search Panel */}
-              <div className="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700">
-                <h2 className="text-xl font-bold text-white flex items-center gap-3 mb-6">
-                  <Search className="w-6 h-6 text-blue-400" />
-                  Find Player
-                </h2>
+            <div className="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700">
+              <h2 className="text-xl font-bold text-white flex items-center gap-3 mb-6">
+                <Search className="w-6 h-6 text-blue-400" />
+                Find Player
+              </h2>
 
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium text-gray-300 mb-2 block">
-                      Player Name
-                    </label>
-                    <input
-                      type="text"
-                      value={playerName}
-                      onChange={(e) => {
-                        setPlayerName(e.target.value);
-                        setError("");
-                      }}
-                      className="w-full bg-gray-700 rounded-lg border border-gray-600 p-3 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="Enter player name"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium text-gray-300 mb-2 block">
-                      Tagline
-                    </label>
-                    <input
-                      type="text"
-                      value={tagline}
-                      onChange={(e) => {
-                        setTagline(e.target.value);
-                        setError("");
-                      }}
-                      className="w-full bg-gray-700 rounded-lg border border-gray-600 p-3 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="Enter tagline"
-                    />
-                  </div>
-
-                  <button
-                    onClick={handleSearch}
-                    disabled={!playerName || !tagline || isLoading}
-                    className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800/50 text-white font-medium py-3 px-4 rounded-lg transition-all flex items-center justify-center gap-2"
-                  >
-                    {isLoading ? (
-                      "Searching..."
-                    ) : (
-                      <>
-                        <Search className="w-5 h-5" />
-                        Search
-                      </>
-                    )}
-                  </button>
-                </div>
-
-                {error && (
-                  <div className="mt-4 p-4 bg-red-500/20 border border-red-500 rounded-lg text-red-100 text-sm">
-                    {error}
-                  </div>
-                )}
-              </div>
-
-              {/* Challenge Status with Create Button */}
-              <div className="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-bold text-white flex items-center gap-3">
-                    <Sword className="w-6 h-6 text-purple-400" />
-                    Challenge Status
-                  </h2>
-                  <button
-                    onClick={() => setIsCreateChallengeOpen(true)}
-                    className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Create Challenge
-                  </button>
-                </div>
-
-                {challenges.length > 0 ? (
-                  <ChallengeList
-                    challenges={challenges}
-                    onViewChallenge={handleViewChallenge}
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-300 mb-2 block">
+                    Lichess Username
+                  </label>
+                  <input
+                    type="text"
+                    value={playerName}
+                    onChange={(e) => {
+                      setPlayerName(e.target.value);
+                      setError("");
+                    }}
+                    className="w-full bg-gray-700 rounded-lg border border-gray-600 p-3 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter Lichess username"
+                    onKeyPress={handleKeyPress}
                   />
-                ) : (
-                  <div className="text-gray-400 text-center py-4">
-                    No active challenges
-                  </div>
-                )}
+                </div>
+
+                <button
+                  onClick={handleSearch}
+                  disabled={!playerName || isLoading}
+                  className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800/50 text-white font-medium py-3 px-4 rounded-lg transition-all flex items-center justify-center gap-2"
+                >
+                  {isLoading ? (
+                    "Searching..."
+                  ) : (
+                    <>
+                      <Search className="w-5 h-5" />
+                      Search
+                    </>
+                  )}
+                </button>
               </div>
+
+              {error && (
+                <div className="mt-4 p-4 bg-red-500/20 border border-red-500 rounded-lg text-red-100 text-sm">
+                  {error}
+                </div>
+              )}
+            </div>
+
+            {/* Challenge Status with Create Button */}
+            <div className="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold text-white flex items-center gap-3">
+                  <Sword className="w-6 h-6 text-purple-400" />
+                  Challenge Status
+                </h2>
+                <button
+                  onClick={() => setIsCreateChallengeOpen(true)}
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  Create Challenge
+                </button>
+              </div>
+
+              {challenges.length > 0 ? (
+                <ChallengeList
+                  challenges={challenges}
+                  onViewChallenge={handleViewChallenge}
+                  onAcceptChallenge={handleAcceptChallenge} // Added to pass accept functionality
+                />
+              ) : (
+                <div className="text-gray-400 text-center py-4">
+                  No active challenges
+                </div>
+              )}
             </div>
           </div>
 
@@ -411,7 +478,6 @@ const PlayerSearch: React.FC<PlayerSearchProps> = ({
                           Game Type
                         </th>
                         <th className="text-left p-3 text-gray-300">Result</th>
-                        <th className="text-center p-3 text-gray-300">K/D/A</th>
                         <th className="text-right p-3 text-gray-300">Date</th>
                       </tr>
                     </thead>
@@ -425,21 +491,20 @@ const PlayerSearch: React.FC<PlayerSearchProps> = ({
                           onClick={() => handleMatchSelect(match)}
                         >
                           <td className="p-3 text-gray-300">
-                            {match.gameType}
+                            {match.gameType} ({match.variant})
                           </td>
                           <td className="p-3">
                             <span
                               className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                                 match.result === "win"
                                   ? "bg-green-100 text-green-800"
-                                  : "bg-red-100 text-red-800"
+                                  : match.result === "loss"
+                                  ? "bg-red-100 text-red-800"
+                                  : "bg-yellow-100 text-yellow-800"
                               }`}
                             >
                               {match.result.toUpperCase()}
                             </span>
-                          </td>
-                          <td className="p-3 text-center text-gray-300">
-                            {match.kills}/{match.deaths}/{match.assists}
                           </td>
                           <td className="p-3 text-right text-gray-300">
                             {new Date(match.timestamp).toLocaleDateString()}
@@ -465,6 +530,7 @@ const PlayerSearch: React.FC<PlayerSearchProps> = ({
         isOpen={isCreateChallengeOpen}
         onClose={() => setIsCreateChallengeOpen(false)}
         onCreateChallenge={handleCreateChallenge}
+        player={foundPlayer} // Pass foundPlayer to dialog for Lichess username
       />
 
       <ChallengeDetailsDialog
@@ -472,6 +538,8 @@ const PlayerSearch: React.FC<PlayerSearchProps> = ({
         isOpen={isChallengeDetailsOpen}
         onClose={() => setIsChallengeDetailsOpen(false)}
         onAcceptChallenge={handleAcceptChallenge}
+        onCompleteChallenge={handleCompleteChallenge} // Added to pass complete functionality
+        canComplete={canComplete}
       />
     </div>
   );

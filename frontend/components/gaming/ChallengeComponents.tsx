@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { useSolanaChallenge } from "@/hooks/useSolanaChallenge";
+import { useChallenge } from "@/hooks/useChallenge"; // Updated from useSolanaChallenge to useChallenge
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,31 +38,23 @@ import {
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-
-interface Challenge {
-  id: string;
-  creator: string;
-  riotId: string;
-  wagerAmount: number;
-  challenger?: string;
-  isComplete?: boolean;
-  stats?: {
-    kills: number;
-    deaths: number;
-    assists: number;
-  };
-}
+import { LichessPlayer, Challenge, LichessMatchStats } from "@/types"; // Updated imports
 
 // Create Challenge Dialog Component
 const CreateChallengeDialog: React.FC<{
   isOpen: boolean;
   onClose: () => void;
-  onCreateChallenge: (challengeData: Omit<Challenge, "id">) => void;
-}> = ({ isOpen, onClose, onCreateChallenge }) => {
-  const [riotId, setRiotId] = useState("");
+  onCreateChallenge: (
+    challengeData: Omit<Challenge, "id" | "creator" | "isComplete">
+  ) => void;
+  player?: LichessPlayer; // Added to pass Lichess player data
+}> = ({ isOpen, onClose, onCreateChallenge, player }) => {
+  const [lichessUsername, setLichessUsername] = useState(
+    player?.username || ""
+  ); // Replaced riotId with lichessUsername, default to player's username
   const [wagerAmount, setWagerAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { createChallenge } = useSolanaChallenge();
+  const { createChallenge } = useChallenge(); // Updated to useChallenge
   const { connected, connect, publicKey } = useWallet();
   const [showWalletPrompt, setShowWalletPrompt] = useState(false);
 
@@ -75,16 +67,26 @@ const CreateChallengeDialog: React.FC<{
 
     setIsLoading(true);
     try {
-      const challengeId = await createChallenge(parseFloat(wagerAmount));
+      const challengeId = await createChallenge({
+        wagerAmount: parseFloat(wagerAmount),
+        lichessUsername, // Use lichessUsername instead of riotId
+        stats: {
+          matchId: "", // Default empty match ID, update as needed
+          playerStats: {
+            result: "draw", // Default to draw, update with actual match data
+            variant: "Standard",
+            speed: "Unknown",
+          },
+        },
+      });
       console.log("Challenge created with ID:", challengeId);
       onCreateChallenge({
-        creator: publicKey?.toString() || "",
-        riotId,
+        lichessUsername, // Replaced riotId
         wagerAmount: parseFloat(wagerAmount),
       });
       toast.success("Challenge created successfully!");
       onClose();
-      setRiotId("");
+      setLichessUsername("");
       setWagerAmount("");
     } catch (error) {
       console.error("Error creating challenge:", error);
@@ -118,14 +120,14 @@ const CreateChallengeDialog: React.FC<{
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="text-sm font-medium text-gray-300 mb-2 block">
-                Riot ID (format: username#tagline)
+                Lichess Username
               </label>
               <input
                 type="text"
-                value={riotId}
-                onChange={(e) => setRiotId(e.target.value)}
+                value={lichessUsername}
+                onChange={(e) => setLichessUsername(e.target.value)}
                 className="w-full bg-gray-700 rounded-lg border border-gray-600 p-3 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter Riot ID"
+                placeholder="Enter Lichess username"
                 required
               />
             </div>
@@ -191,7 +193,8 @@ const CreateChallengeDialog: React.FC<{
 const ChallengeList: React.FC<{
   challenges: Challenge[];
   onViewChallenge: (challenge: Challenge) => void;
-}> = ({ challenges, onViewChallenge }) => {
+  onAcceptChallenge: (challengeId: string) => void; // Added to handle acceptance
+}> = ({ challenges, onViewChallenge, onAcceptChallenge }) => {
   return (
     <div className="space-y-4">
       {challenges.map((challenge) => (
@@ -225,10 +228,24 @@ const ChallengeList: React.FC<{
                   {challenge.wagerAmount} SOL
                 </span>
               </div>
+              <div className="flex items-center gap-2 col-span-2">
+                <User className="w-4 h-4 text-blue-400" />
+                <span className="text-gray-300">
+                  Lichess Username: {challenge.lichessUsername}
+                </span>
+              </div>
             </div>
+            {!challenge.challenger && !challenge.isComplete && (
+              <button
+                onClick={() => onAcceptChallenge(challenge.id)}
+                className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg flex items-center justify-center gap-2"
+              >
+                Accept Challenge
+              </button>
+            )}
             <button
               onClick={() => onViewChallenge(challenge)}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg flex items-center justify-center gap-2"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg flex items-center justify-center gap-2 mt-2"
             >
               View Challenge
             </button>
@@ -245,14 +262,24 @@ const ChallengeDetailsDialog: React.FC<{
   isOpen: boolean;
   onClose: () => void;
   onAcceptChallenge: (challengeId: string) => void;
-}> = ({ challenge, isOpen, onClose, onAcceptChallenge }) => {
+  onCompleteChallenge?: (winner: string) => void; // Added for completion
+  canComplete: boolean;
+}> = ({
+  challenge,
+  isOpen,
+  onClose,
+  onAcceptChallenge,
+  onCompleteChallenge,
+  canComplete,
+}) => {
   const [showConfirmAccept, setShowConfirmAccept] = useState(false);
   const [showWalletPrompt, setShowWalletPrompt] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { acceptChallenge } = useSolanaChallenge();
+  const { acceptChallenge, completeChallenge: completeChallengeHook } =
+    useChallenge(); // Updated to useChallenge
   const { connected, connect } = useWallet();
 
-  const handleAcceptChallenge = async (challengeId: string) => {
+  const handleAccept = async (challengeId: string) => {
     if (!connected) {
       setShowWalletPrompt(true);
       return;
@@ -260,7 +287,11 @@ const ChallengeDetailsDialog: React.FC<{
 
     setIsLoading(true);
     try {
-      await acceptChallenge(challengeId);
+      await acceptChallenge({
+        challengeId,
+        wagerAmount: challenge?.wagerAmount || 0,
+        lichessUsername: challenge?.lichessUsername || "",
+      });
       onAcceptChallenge(challengeId);
       toast.success("Challenge accepted successfully!");
       setShowConfirmAccept(false);
@@ -268,6 +299,34 @@ const ChallengeDetailsDialog: React.FC<{
     } catch (error) {
       toast.error("Failed to accept challenge");
       console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleComplete = async (winner: string) => {
+    if (!challenge || !challenge.id || !onCompleteChallenge) return;
+
+    setIsLoading(true);
+    try {
+      await completeChallengeHook({
+        challengeId: challenge.id,
+        winner,
+        stats: challenge.stats || {
+          matchId: "", // Default empty match ID, update as needed
+          playerStats: {
+            result: "draw", // Default to draw, update with actual match data
+            variant: "Standard",
+            speed: "Unknown",
+          },
+        },
+      });
+      onCompleteChallenge(winner);
+      toast.success("Challenge completed successfully!");
+      onClose();
+    } catch (error) {
+      toast.error("Failed to complete challenge");
+      console.error("Error completing challenge:", error);
     } finally {
       setIsLoading(false);
     }
@@ -297,9 +356,16 @@ const ChallengeDetailsDialog: React.FC<{
               </div>
             </div>
             <div className="bg-gray-700/50 p-4 rounded-lg">
-              <div className="text-gray-400 text-sm mb-1">Riot ID</div>
-              <div className="text-white">{challenge.riotId}</div>
+              <div className="text-gray-400 text-sm mb-1">Lichess Username</div>
+              <div className="text-white">{challenge.lichessUsername}</div>{" "}
+              {/* Replaced riotId */}
             </div>
+            {challenge.challenger && (
+              <div className="bg-gray-700/50 p-4 rounded-lg">
+                <div className="text-gray-400 text-sm mb-1">Challenger</div>
+                <div className="text-white">{challenge.challenger}</div>
+              </div>
+            )}
             {!challenge.challenger && !challenge.isComplete && (
               <div className="mt-4">
                 {connected ? (
@@ -313,6 +379,28 @@ const ChallengeDetailsDialog: React.FC<{
                 ) : (
                   <WalletMultiButton className="w-full" />
                 )}
+              </div>
+            )}
+            {canComplete && challenge.isComplete !== true && (
+              <div className="mt-4">
+                <button
+                  onClick={() => handleComplete(challenge.creator)} // Default to creator, adjust logic as needed
+                  className="w-full bg-yellow-600 hover:bg-yellow-700 text-white py-3 px-4 rounded-lg flex items-center justify-center gap-2"
+                  disabled={isLoading}
+                >
+                  {isLoading
+                    ? "Completing..."
+                    : "Complete Challenge (Creator Wins)"}
+                </button>
+                <button
+                  onClick={() => handleComplete(challenge.challenger || "")} // Handle challenger, default empty if undefined
+                  className="w-full bg-yellow-600 hover:bg-yellow-700 text-white py-3 px-4 rounded-lg flex items-center justify-center gap-2 mt-2"
+                  disabled={isLoading}
+                >
+                  {isLoading
+                    ? "Completing..."
+                    : "Complete Challenge (Challenger Wins)"}
+                </button>
               </div>
             )}
           </div>
@@ -351,13 +439,10 @@ const ChallengeDetailsDialog: React.FC<{
             </AlertDialogCancel>
             <AlertDialogAction
               className="bg-green-600 hover:bg-green-700 text-white"
-              onClick={() => {
-                onAcceptChallenge(challenge.id);
-                setShowConfirmAccept(false);
-                onClose();
-              }}
+              onClick={() => handleAccept(challenge.id)}
+              disabled={isLoading}
             >
-              Accept
+              {isLoading ? "Accepting..." : "Accept"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react";
 import dotenv from "dotenv";
-
-dotenv.config();
 import { useWallet } from "@solana/wallet-adapter-react";
 import { Program, AnchorProvider, Idl } from "@project-serum/anchor";
 import { PublicKey, Connection } from "@solana/web3.js";
 
-const PROGRAM_ID = "EqRQ5Ab5XnoE5x5nJWiRX4UzDrEt1VDiKiHmev4FsGS9";
+dotenv.config();
+
+const PROGRAM_ID = "G2oEwdxGH5ygDFoQNfShxTn3EifGqsDynazPnLUqkQQT";
 
 if (!PROGRAM_ID) {
   throw new Error("NEXT_PUBLIC_PROGRAM_ID environment variable is not set");
@@ -43,7 +43,7 @@ export const useProgram = () => {
           AnchorProvider.defaultOptions()
         );
 
-        // TODO: Import actual IDL
+        // Fetch the IDL for the program (assuming it’s for Lichess challenges)
         const idl = await Program.fetchIdl(new PublicKey(PROGRAM_ID), provider);
 
         if (!idl) {
@@ -56,7 +56,6 @@ export const useProgram = () => {
           provider
         );
 
-        // const program = new Program(idl, new PublicKey(PROGRAM_ID), provider);
         setProgram(program);
       } catch (err) {
         setError(

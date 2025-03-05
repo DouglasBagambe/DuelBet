@@ -1,54 +1,51 @@
 // frontend/components/common/Button.tsx
 
 import React from "react";
+import { cn } from "@/lib/utils"; // Assuming you're using shadcn/ui's utility for class merging
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "danger";
-  size?: "sm" | "md" | "lg";
-  isLoading?: boolean;
+  variant?: "default" | "outline" | "secondary" | "ghost";
+  size?: "default" | "sm" | "lg" | "icon";
+  className?: string;
+  children: React.ReactNode;
+  icon?: React.ReactNode;
 }
 
-const Button: React.FC<ButtonProps> = ({
+export const Button: React.FC<ButtonProps> = ({
   children,
-  variant = "primary",
-  size = "md",
-  isLoading = false,
-  className = "",
-  disabled,
+  icon,
+  variant = "default",
+  size = "default",
+  className,
   ...props
 }) => {
-  const baseStyles =
-    "font-semibold rounded-lg transition-all duration-200 flex items-center justify-center";
-
-  const variants = {
-    primary: "bg-blue-500 hover:bg-blue-600 text-white disabled:bg-blue-300",
-    secondary:
-      "bg-gray-200 hover:bg-gray-300 text-gray-800 disabled:bg-gray-100",
-    danger: "bg-red-500 hover:bg-red-600 text-white disabled:bg-red-300",
+  const variantClasses = {
+    default: "bg-primary text-primary-foreground hover:bg-primary/90",
+    outline:
+      "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+    secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+    ghost: "hover:bg-accent hover:text-accent-foreground",
   };
 
-  const sizes = {
-    sm: "px-3 py-1.5 text-sm",
-    md: "px-4 py-2 text-base",
-    lg: "px-6 py-3 text-lg",
+  const sizeClasses = {
+    default: "h-10 px-4 py-2",
+    sm: "h-8 rounded-md px-3 text-xs",
+    lg: "h-11 rounded-md px-8",
+    icon: "h-10 w-10",
   };
 
   return (
     <button
-      className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
-      disabled={disabled || isLoading}
+      className={cn(
+        "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+        variantClasses[variant],
+        sizeClasses[size],
+        className
+      )}
       {...props}
     >
-      {isLoading ? (
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-          Loading...
-        </div>
-      ) : (
-        children
-      )}
+      {icon && <span className="mr-2">{icon}</span>}
+      {children}
     </button>
   );
 };
-
-export default Button;

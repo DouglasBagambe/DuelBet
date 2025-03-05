@@ -21,9 +21,8 @@ export const useChallenge = () => {
   const [challengeAccount, setChallengeAccount] = useState<string>("");
 
   const createChallenge = async ({
-    stats,
     wagerAmount,
-    riotId,
+    lichessUsername, // Replaced riotId with lichessUsername
   }: CreateChallengeParams) => {
     if (!wallet.connected || !program) {
       setError("Wallet not connected");
@@ -35,11 +34,11 @@ export const useChallenge = () => {
       setError(null);
       setChallengeStatus("creating");
 
-      const statsHash = new Uint8Array(32).fill(1); // TODO: Implement proper stats hashing
+      const statsHash = new Uint8Array(32).fill(1); // Placeholder for Lichess stats (e.g., game IDs or moves)
       const challengeKeypair = new PublicKey(challengeAccount);
 
       const createChallengeIx = await program.methods
-        .createChallenge(new PublicKey(wagerAmount), statsHash)
+        .createChallenge(new PublicKey(wagerAmount), statsHash) // Assuming wagerAmount is in SOL (PublicKey for amount in lamports)
         .accounts({
           challenge: challengeKeypair,
           creator: wallet.publicKey!,
@@ -72,7 +71,7 @@ export const useChallenge = () => {
   const acceptChallenge = async ({
     challengeId,
     wagerAmount,
-    riotId,
+    lichessUsername, // Replaced riotId with lichessUsername
   }: AcceptChallengeParams) => {
     if (!wallet.connected || !program) {
       setError("Wallet not connected");
@@ -114,7 +113,7 @@ export const useChallenge = () => {
   const completeChallenge = async ({
     challengeId,
     winner,
-    stats,
+    stats, // Removed specific LoL stats (kills, deaths, assists), keeping as generic stats
   }: CompleteChallengeParams) => {
     if (!wallet.connected || !program) {
       setError("Wallet not connected");
@@ -125,13 +124,13 @@ export const useChallenge = () => {
       setLoading(true);
       setError(null);
 
-      const zkProof = new Uint8Array(32).fill(0); // TODO: Implement proper ZK proof generation
+      const zkProof = new Uint8Array(32).fill(0); // Placeholder for Lichess ZK proof (e.g., game result verification)
 
       const completeChallengeIx = await program.methods
         .completeChallenge(new PublicKey(winner), zkProof)
         .accounts({
           challenge: new PublicKey(challengeId),
-          creator: wallet.publicKey!,
+          creator: wallet.publicKey!, // Assuming creator or challenger can complete, adjust based on your program logic
           challenger: wallet.publicKey!,
         })
         .instruction();
