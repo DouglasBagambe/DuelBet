@@ -1,18 +1,13 @@
 // frontend/hooks/useProgram.ts
 
+// frontend/hooks/useProgram.ts
 import { useEffect, useState } from "react";
-import dotenv from "dotenv";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { Program, AnchorProvider, Idl } from "@project-serum/anchor";
 import { PublicKey, Connection } from "@solana/web3.js";
-
-dotenv.config();
+import gamingChallengeIdl from "../types/idl/gaming_challenge.json"; // Import your IDL
 
 const PROGRAM_ID = "G2oEwdxGH5ygDFoQNfShxTn3EifGqsDynazPnLUqkQQT";
-
-if (!PROGRAM_ID) {
-  throw new Error("NEXT_PUBLIC_PROGRAM_ID environment variable is not set");
-}
 
 export const useProgram = () => {
   const wallet = useWallet();
@@ -43,15 +38,8 @@ export const useProgram = () => {
           AnchorProvider.defaultOptions()
         );
 
-        // Fetch the IDL for the program (assuming it’s for Lichess challenges)
-        const idl = await Program.fetchIdl(new PublicKey(PROGRAM_ID), provider);
-
-        if (!idl) {
-          throw new Error("Failed to fetch program IDL");
-        }
-
         const program = new Program(
-          idl as Idl,
+          gamingChallengeIdl as Idl,
           new PublicKey(PROGRAM_ID),
           provider
         );

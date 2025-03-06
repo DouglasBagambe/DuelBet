@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+// frontend/components/gaming/PlayerSearch.tsx
+
+import React, { useEffect, useState } from "react";
 import {
   Search,
   User,
@@ -11,10 +13,11 @@ import {
   Target,
   Trophy,
   Plus,
+  RefreshCw,
 } from "lucide-react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useChallenge } from "@/hooks/useChallenge";
-import { ChallengeData, LichessMatchStats } from "@/types";
+import { LichessMatchStats, Challenge } from "@/types";
 import {
   CreateChallengeDialog,
   ChallengeList,
@@ -39,18 +42,8 @@ interface LichessPlayer {
 interface PlayerSearchProps {
   onPlayerFound?: (playerData: LichessPlayer) => void;
   onMatchesFound?: (matches: Match[]) => void;
-  challenge?: ChallengeData;
+  challenge?: Challenge;
   onChallengeComplete?: (winner: string) => void;
-}
-
-interface Challenge {
-  id: string;
-  creator: string; // Solana public key
-  lichessUsername: string;
-  wagerAmount: number;
-  challenger?: string; // Solana public key
-  isComplete?: boolean;
-  stats?: LichessMatchStats;
 }
 
 const PlayerSearch: React.FC<PlayerSearchProps> = ({
@@ -64,9 +57,11 @@ const PlayerSearch: React.FC<PlayerSearchProps> = ({
     createChallenge,
     acceptChallenge,
     completeChallenge,
+    getChallenges,
     loading: challengeLoading,
     error: challengeError,
-  } = useChallenge();
+    challenges, // Use challenges from the hook directly
+  } = useChallenge(); // Destructure challenges from useChallenge
   const [playerName, setPlayerName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -80,8 +75,38 @@ const PlayerSearch: React.FC<PlayerSearchProps> = ({
 
   const [isCreateChallengeOpen, setIsCreateChallengeOpen] = useState(false);
   const [isChallengeDetailsOpen, setIsChallengeDetailsOpen] = useState(false);
-  const [selectedChallenge, setSelectedChallenge] = useState<Challenge>();
-  const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [selectedChallenge, setSelectedChallenge] = useState<
+    Challenge | undefined
+  >(undefined);
+
+  useEffect(() => {
+    if (wallet.connected) {
+      getChallenges(); // This will update the challenges in useChallenge
+    }
+  }, [wallet.connected, getChallenges]);
+
+  // const [setChallenges] = useState<Challenge[]>([]);
+
+  // useEffect(() => {
+  //   const savedChallenges = localStorage.getItem("challenges");
+  //   if (savedChallenges) setChallenges(JSON.parse(savedChallenges));
+  // }, []);
+
+  // const { createChallenge, acceptChallenge, completeChallenge, getChallenges, loading, error, challenges } = useChallenge();
+
+  useEffect(() => {
+    // Add logic to fetch challenges if needed
+  }, []);
+
+  useEffect(() => {
+    let mounted = true; // Prevent memory leaks
+    if (wallet.connected && mounted) {
+      getChallenges();
+    }
+    return () => {
+      mounted = false; // Cleanup
+    };
+  }, [wallet.connected]); // Only re-run on wallet connection change
 
   const handleCreateChallenge = async (
     challengeData: Omit<Challenge, "id" | "creator" | "isComplete">
@@ -106,24 +131,13 @@ const PlayerSearch: React.FC<PlayerSearchProps> = ({
       });
 
       if (challengeId) {
-        const newChallenge = {
-          ...challengeData,
-          id: challengeId,
-          creator: wallet.publicKey!.toString(),
-          isComplete: false,
-        };
-        setChallenges((prev) => [...prev, newChallenge]);
+        getChallenges(); // Refresh the list
       }
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to create challenge"
       );
     }
-  };
-
-  const handleViewChallenge = (challenge: Challenge) => {
-    setSelectedChallenge(challenge);
-    setIsChallengeDetailsOpen(true);
   };
 
   const handleAcceptChallenge = async (challengeId: string) => {
@@ -133,7 +147,9 @@ const PlayerSearch: React.FC<PlayerSearchProps> = ({
     }
 
     try {
-      const challengeToAccept = challenges.find((c) => c.id === challengeId);
+      const challengeToAccept = challenges.find(
+        (c: Challenge) => c.id === challengeId
+      );
       if (!challengeToAccept) {
         setError("Challenge not found");
         return;
@@ -146,19 +162,18 @@ const PlayerSearch: React.FC<PlayerSearchProps> = ({
       });
 
       if (success) {
-        setChallenges((prev) =>
-          prev.map((challenge) =>
-            challenge.id === challengeId
-              ? { ...challenge, challenger: wallet.publicKey?.toString() }
-              : challenge
-          )
-        );
+        getChallenges(); // Refresh the list
       }
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to accept challenge"
       );
     }
+  };
+
+  const handleViewChallenge = (challenge: Challenge) => {
+    setSelectedChallenge(challenge);
+    setIsChallengeDetailsOpen(true);
   };
 
   const handleSearch = async () => {
@@ -406,39 +421,8 @@ const PlayerSearch: React.FC<PlayerSearchProps> = ({
               )}
             </div>
 
-            {/* Challenge Status with Create Button */}
+            {/* Matches */}
             <div className="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold text-white flex items-center gap-3">
-                  <Sword className="w-6 h-6 text-purple-400" />
-                  Challenge Status
-                </h2>
-                <button
-                  onClick={() => setIsCreateChallengeOpen(true)}
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
-                  Create Challenge
-                </button>
-              </div>
-
-              {challenges.length > 0 ? (
-                <ChallengeList
-                  challenges={challenges}
-                  onViewChallenge={handleViewChallenge}
-                  onAcceptChallenge={handleAcceptChallenge} // Added to pass accept functionality
-                />
-              ) : (
-                <div className="text-gray-400 text-center py-4">
-                  No active challenges
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Right Column - Match History */}
-          <div className="col-span-12 lg:col-span-8">
-            <div className="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700 h-full">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-white flex items-center gap-3">
                   <Target className="w-6 h-6 text-purple-400" />
@@ -521,6 +505,41 @@ const PlayerSearch: React.FC<PlayerSearchProps> = ({
                     : "Search for a player to view matches"}
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* Right Column - Match History */}
+          <div className="col-span-12 lg:col-span-8">
+            {/* Challenge Status with Create Button */}
+            {/* There should be a viewing of the available challenegs here, and a button to create a new challenge plus another small icon for refreshing the challeneg list. */}
+            <div className="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-white flex items-center gap-3">
+                  <Sword className="w-6 h-6 text-purple-400" />
+                  Challenge Status
+                </h2>
+                <button
+                  onClick={() => getChallenges()}
+                  className="text-gray-400 hover:text-white transition-colors"
+                  title="Refresh Challenges"
+                >
+                  <RefreshCw className="w-5 h-5" />
+                </button>
+              </div>
+
+              <ChallengeList
+                challenges={challenges} // Use challenges from useChallenge
+                onViewChallenge={handleViewChallenge}
+                onAcceptChallenge={handleAcceptChallenge}
+              />
+
+              <button
+                onClick={() => setIsCreateChallengeOpen(true)}
+                className="mt-4 w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-4 rounded-lg transition-all flex items-center justify-center gap-2"
+              >
+                <Plus className="w-5 h-5" />
+                Create New Challenge
+              </button>
             </div>
           </div>
         </div>

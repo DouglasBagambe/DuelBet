@@ -1,15 +1,23 @@
-//src/hooks/useChallenge.ts
-
-import { useState } from "react";
-import { PublicKey, Transaction, SystemProgram } from "@solana/web3.js";
+// frontend/hooks/useChallenge.ts
+import { useEffect, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
+import { PublicKey, Transaction, SystemProgram } from "@solana/web3.js";
 import { useProgram } from "./useProgram";
 import {
   CreateChallengeParams,
   AcceptChallengeParams,
   CompleteChallengeParams,
   ChallengeStatus,
+  Challenge,
+  LichessMatchStats,
 } from "@/types";
+
+// export interface CreateChallengeParams {
+//   wagerAmount: number;
+//   lichessUsername: string;
+//   metadata?: string; // Optional metadata (e.g., Lichess link)
+//   stats?: LichessMatchStats;
+// }
 
 export const useChallenge = () => {
   const wallet = useWallet();
@@ -18,11 +26,14 @@ export const useChallenge = () => {
   const [error, setError] = useState<string | null>(null);
   const [challengeStatus, setChallengeStatus] =
     useState<ChallengeStatus>("idle");
-  const [challengeAccount, setChallengeAccount] = useState<string>("");
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [lastFetch, setLastFetch] = useState<number>(0);
 
   const createChallenge = async ({
     wagerAmount,
-    lichessUsername, // Replaced riotId with lichessUsername
+    lichessUsername,
+    metadata = "", // Default empty string if not provided
+    stats,
   }: CreateChallengeParams) => {
     if (!wallet.connected || !program) {
       setError("Wallet not connected");
@@ -34,11 +45,15 @@ export const useChallenge = () => {
       setError(null);
       setChallengeStatus("creating");
 
-      const statsHash = new Uint8Array(32).fill(1); // Placeholder for Lichess stats (e.g., game IDs or moves)
-      const challengeKeypair = new PublicKey(challengeAccount);
+      const challengeKeypair = PublicKey.unique();
+      const statsHash = new Uint8Array(32);
+      if (stats?.matchId) {
+        const hash = require("@solana/web3.js").hash(stats.matchId);
+        statsHash.set(hash.slice(0, 32));
+      }
 
       const createChallengeIx = await program.methods
-        .createChallenge(new PublicKey(wagerAmount), statsHash) // Assuming wagerAmount is in SOL (PublicKey for amount in lamports)
+        .createChallenge(wagerAmount, statsHash, metadata) // Pass metadata
         .accounts({
           challenge: challengeKeypair,
           creator: wallet.publicKey!,
@@ -51,28 +66,95 @@ export const useChallenge = () => {
         transaction,
         program.provider.connection
       );
+      await program.provider.connection.confirmTransaction(
+        signature,
+        "confirmed"
+      );
+      console.log("Challenge created, signature:", signature);
 
-      await program.provider.connection.confirmTransaction(signature);
-      setChallengeStatus("active");
-      setChallengeAccount(challengeKeypair.toString());
-
+      const newChallenge: Challenge = {
+        id: challengeKeypair.toString(),
+        creator: wallet.publicKey!.toString(),
+        lichessUsername,
+        wagerAmount,
+        isComplete: false,
+        isActive: true,
+        challenger: PublicKey.default.toString(),
+        createdAt: Date.now() / 1000,
+        metadata, // Store metadata locally
+        stats: stats || {
+          matchId: "",
+          playerStats: {
+            result: "draw",
+            variant: "Standard",
+            speed: "Unknown",
+          },
+        },
+      };
+      setChallenges((prev) => [...prev, newChallenge]);
+      await getChallenges(); // Fetch updated on-chain list
       return challengeKeypair.toString();
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to create challenge"
       );
-      setChallengeStatus("idle");
       return null;
     } finally {
       setLoading(false);
     }
   };
 
-  const acceptChallenge = async ({
-    challengeId,
-    wagerAmount,
-    lichessUsername, // Replaced riotId with lichessUsername
-  }: AcceptChallengeParams) => {
+  const getChallenges = async () => {
+    if (!wallet.connected || !program) {
+      setError("Wallet not connected");
+      return [];
+    }
+
+    const now = Date.now();
+    if (now - lastFetch < 10000) {
+      console.log("Rate limit hit, skipping fetch");
+      return challenges;
+    }
+
+    try {
+      setLoading(true);
+      const allChallenges = await program.account.challenge.all();
+      console.log("Raw on-chain challenges:", allChallenges);
+
+      const challengeList = allChallenges.map((account) => ({
+        id: account.publicKey.toString(),
+        creator: account.account.creator.toString(),
+        lichessUsername: "", // Still managed in frontend for now
+        wagerAmount: account.account.wagerAmount.toNumber() / 1e9,
+        isComplete: account.account.isComplete,
+        isActive: account.account.isActive,
+        challenger: account.account.challenger.toString(),
+        createdAt: account.account.createdAt.toNumber(),
+        metadata: account.account.metadata, // Fetch metadata
+        stats: {
+          matchId: "",
+          playerStats: {
+            result: "draw" as "draw" | "win" | "loss",
+            variant: "Standard",
+            speed: "Unknown",
+          },
+        },
+      }));
+      setChallenges(challengeList);
+      setLastFetch(now);
+      console.log("Fetched challenges:", challengeList);
+      return challengeList;
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch challenges"
+      );
+      return challenges;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const acceptChallenge = async ({ challengeId }: AcceptChallengeParams) => {
     if (!wallet.connected || !program) {
       setError("Wallet not connected");
       return false;
@@ -80,8 +162,6 @@ export const useChallenge = () => {
 
     try {
       setLoading(true);
-      setError(null);
-
       const acceptChallengeIx = await program.methods
         .acceptChallenge()
         .accounts({
@@ -96,9 +176,9 @@ export const useChallenge = () => {
         transaction,
         program.provider.connection
       );
-
       await program.provider.connection.confirmTransaction(signature);
-      setChallengeStatus("accepted");
+      console.log("Challenge accepted, signature:", signature);
+      await getChallenges();
       return true;
     } catch (err) {
       setError(
@@ -113,7 +193,7 @@ export const useChallenge = () => {
   const completeChallenge = async ({
     challengeId,
     winner,
-    stats, // Removed specific LoL stats (kills, deaths, assists), keeping as generic stats
+    stats,
   }: CompleteChallengeParams) => {
     if (!wallet.connected || !program) {
       setError("Wallet not connected");
@@ -122,15 +202,12 @@ export const useChallenge = () => {
 
     try {
       setLoading(true);
-      setError(null);
-
-      const zkProof = new Uint8Array(32).fill(0); // Placeholder for Lichess ZK proof (e.g., game result verification)
-
+      const zkProof = Buffer.from("1-0"); // Placeholder, adjust based on actual game result
       const completeChallengeIx = await program.methods
         .completeChallenge(new PublicKey(winner), zkProof)
         .accounts({
           challenge: new PublicKey(challengeId),
-          creator: wallet.publicKey!, // Assuming creator or challenger can complete, adjust based on your program logic
+          creator: wallet.publicKey!, // Adjust if challenger completes
           challenger: wallet.publicKey!,
         })
         .instruction();
@@ -140,9 +217,9 @@ export const useChallenge = () => {
         transaction,
         program.provider.connection
       );
-
       await program.provider.connection.confirmTransaction(signature);
-      setChallengeStatus("completed");
+      console.log("Challenge completed, signature:", signature);
+      await getChallenges();
       return true;
     } catch (err) {
       setError(
@@ -154,13 +231,18 @@ export const useChallenge = () => {
     }
   };
 
+  useEffect(() => {
+    if (wallet.connected) getChallenges();
+  }, [wallet.connected]);
+
   return {
     createChallenge,
     acceptChallenge,
     completeChallenge,
+    getChallenges,
     loading,
     error,
     challengeStatus,
-    challengeAccount,
+    challenges,
   };
 };

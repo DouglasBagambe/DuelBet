@@ -41,6 +41,7 @@ export interface CreateChallengeParams {
   stats: LichessMatchStats; // Lichess-specific stats
   wagerAmount: number; // In SOL
   lichessUsername: string; // Replaced riotId with lichessUsername
+  metadata?: string; // Optional metadata (e.g., Lichess link)
 }
 
 export interface AcceptChallengeParams {
@@ -120,5 +121,19 @@ export interface Challenge {
   wagerAmount: number;
   challenger?: string; // Solana public key
   isComplete?: boolean;
-  stats?: LichessMatchStats; // Use the existing LichessMatchStats
+  isActive: boolean;
+  metadata: string; // Added for game-specific data (e.g., Lichess link)
+  stats?: LichessMatchStats;
+  variant?: { key: string; name: string; short: string }; // Add this
+  speed?: string; // Add this
+  timeControl?: {
+    limit: number;
+    increment: number;
+    show: string;
+    type: string;
+  }; // Add this
+  color?: string; // Add this
+  rated?: boolean; // Add this
+  status?: string; // Add this for "offline" or other statuses
+  createdAt: number;
 }
