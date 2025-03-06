@@ -1,6 +1,5 @@
 // frontend/hooks/useProgram.ts
 
-// frontend/hooks/useProgram.ts
 import { useEffect, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { Program, AnchorProvider, Idl } from "@project-serum/anchor";
