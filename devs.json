@@ -1,0 +1,4 @@
+// "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+
+    // "build": "tsc && cd frontend && next build",
+    // "start": "ts-node --transpile-only src/index.ts",
