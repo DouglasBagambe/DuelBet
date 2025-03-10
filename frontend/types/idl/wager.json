@@ -1,0 +1,64 @@
+{
+  "version": "0.1.0",
+  "name": "wager",
+  "instructions": [
+    {
+      "name": "initializeWager",
+      "accounts": [
+        { "name": "wager", "isMut": true, "isSigner": true },
+        { "name": "user", "isMut": true, "isSigner": true },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": [
+        { "name": "amount", "type": "u64" },
+        { "name": "description", "type": "string" }
+      ]
+    },
+    {
+      "name": "acceptWager",
+      "accounts": [
+        { "name": "wager", "isMut": true, "isSigner": false },
+        { "name": "user", "isMut": true, "isSigner": true },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": []
+    },
+    {
+      "name": "completeWager",
+      "accounts": [
+        { "name": "wager", "isMut": true, "isSigner": false },
+        { "name": "winner", "isMut": true, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": [{ "name": "winner", "type": "publicKey" }]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Wager",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "creator", "type": "publicKey" },
+          { "name": "challenger", "type": "publicKey" },
+          { "name": "amount", "type": "u64" },
+          { "name": "description", "type": "string" },
+          { "name": "isComplete", "type": "bool" }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "AlreadyAccepted",
+      "msg": "Wager already accepted"
+    },
+    {
+      "code": 6001,
+      "name": "AlreadyCompleted",
+      "msg": "Wager already completed"
+    },
+    { "code": 6002, "name": "InvalidWinner", "msg": "Invalid winner" }
+  ]
+}
