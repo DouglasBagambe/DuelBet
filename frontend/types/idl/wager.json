@@ -11,7 +11,11 @@
       ],
       "args": [
         { "name": "amount", "type": "u64" },
-        { "name": "description", "type": "string" }
+        { "name": "description", "type": "string" },
+        { "name": "optionA", "type": "string" },
+        { "name": "optionB", "type": "string" },
+        { "name": "creatorPick", "type": "bool" },
+        { "name": "eventId", "type": "string" }
       ]
     },
     {
@@ -27,10 +31,18 @@
       "name": "completeWager",
       "accounts": [
         { "name": "wager", "isMut": true, "isSigner": false },
-        { "name": "winner", "isMut": true, "isSigner": false },
         { "name": "systemProgram", "isMut": false, "isSigner": false }
       ],
-      "args": [{ "name": "winner", "type": "publicKey" }]
+      "args": [{ "name": "result", "type": "u8" }]
+    },
+    {
+      "name": "withdraw",
+      "accounts": [
+        { "name": "wager", "isMut": true, "isSigner": false },
+        { "name": "user", "isMut": true, "isSigner": true },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -43,7 +55,17 @@
           { "name": "challenger", "type": "publicKey" },
           { "name": "amount", "type": "u64" },
           { "name": "description", "type": "string" },
-          { "name": "isComplete", "type": "bool" }
+          { "name": "optionA", "type": "string" },
+          { "name": "optionB", "type": "string" },
+          { "name": "creatorPick", "type": "bool" },
+          { "name": "challengerPick", "type": "bool" },
+          { "name": "eventId", "type": "string" },
+          { "name": "isComplete", "type": "bool" },
+          { "name": "result", "type": "u8" },
+          { "name": "creatorPaid", "type": "bool" },
+          { "name": "challengerPaid", "type": "bool" },
+          { "name": "creatorWithdrawn", "type": "bool" },
+          { "name": "challengerWithdrawn", "type": "bool" }
         ]
       }
     }
@@ -59,6 +81,17 @@
       "name": "AlreadyCompleted",
       "msg": "Wager already completed"
     },
-    { "code": 6002, "name": "InvalidWinner", "msg": "Invalid winner" }
+    { "code": 6002, "name": "InvalidResult", "msg": "Invalid result" },
+    {
+      "code": 6003,
+      "name": "WagerNotCompleted",
+      "msg": "Wager not completed yet"
+    },
+    {
+      "code": 6004,
+      "name": "NotAuthorizedToWithdraw",
+      "msg": "Not authorized to withdraw"
+    },
+    { "code": 6005, "name": "AlreadyWithdrawn", "msg": "Already withdrawn" }
   ]
 }

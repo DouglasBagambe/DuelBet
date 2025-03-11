@@ -2,7 +2,6 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/": "pages/index.js",
-  "/lichess": "pages/lichess.js",
-  "/h2h": "pages/h2h.js"
+  "/h2h": "pages/h2h.js",
+  "/": "pages/index.js"
 }
