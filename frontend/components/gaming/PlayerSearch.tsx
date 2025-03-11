@@ -23,6 +23,7 @@ import {
   ChallengeList,
   ChallengeDetailsDialog,
 } from "./ChallengeComponents";
+import { useProgram } from "@/hooks/useProgram";
 
 const NEXT_PUBLIC_API_URL = "http://localhost:3001"; // Kept for potential backend integration
 
@@ -79,11 +80,28 @@ const PlayerSearch: React.FC<PlayerSearchProps> = ({
     Challenge | undefined
   >(undefined);
 
+  const { program } = useProgram();
+
   useEffect(() => {
-    if (wallet.connected) {
-      getChallenges(); // This will update the challenges in useChallenge
+    if (wallet.connected && program) {
+      console.log("Wallet connected and program ready, fetching challenges");
+      getChallenges();
     }
-  }, [wallet.connected, getChallenges]);
+  }, [wallet.connected, program, getChallenges]);
+
+  // useEffect(() => {
+  //   if (wallet.connected) {
+  //     getChallenges(); // Fetch challenges when wallet connects
+  //   }
+  // }, [wallet.connected, getChallenges]);
+
+  // Add a manual refresh button handler if not already present
+  const handleRefreshChallenges = async () => {
+    console.log("Manually refreshing challenges");
+    await getChallenges();
+  };
+
+  console.log("PlayerSearch rendering with challenges:", challenges);
 
   // const [setChallenges] = useState<Challenge[]>([]);
 
@@ -519,11 +537,16 @@ const PlayerSearch: React.FC<PlayerSearchProps> = ({
                   Challenge Status
                 </h2>
                 <button
-                  onClick={() => getChallenges()}
-                  className="text-gray-400 hover:text-white transition-colors"
+                  onClick={handleRefreshChallenges}
+                  disabled={challengeLoading}
+                  className="text-gray-400 hover:text-white transition-colors disabled:opacity-50"
                   title="Refresh Challenges"
                 >
-                  <RefreshCw className="w-5 h-5" />
+                  <RefreshCw
+                    className={`w-5 h-5 ${
+                      challengeLoading ? "animate-spin" : ""
+                    }`}
+                  />
                 </button>
               </div>
 

@@ -106,31 +106,31 @@ export const useChallenge = () => {
 
   const getChallenges = async () => {
     if (!wallet.connected || !program) {
-      setError("Wallet not connected");
+      console.log("Wallet or program not ready");
       return [];
-    }
-
-    const now = Date.now();
-    if (now - lastFetch < 10000) {
-      console.log("Rate limit hit, skipping fetch");
-      return challenges;
     }
 
     try {
       setLoading(true);
-      const allChallenges = await program.account.challenge.all();
-      console.log("Raw on-chain challenges:", allChallenges);
+      const allChallenges = await program.account.wager.all();
+      console.log("Raw challenges:", allChallenges);
+
+      if (allChallenges.length === 0) {
+        console.log("No challenges found on-chain");
+      }
 
       const challengeList = allChallenges.map((account) => ({
         id: account.publicKey.toString(),
         creator: account.account.creator.toString(),
-        lichessUsername: "", // Still managed in frontend for now
-        wagerAmount: account.account.wagerAmount.toNumber() / 1e9,
-        isComplete: account.account.isComplete,
-        isActive: account.account.isActive,
+        lichessUsername: account.account.description || "Unknown",
+        wagerAmount: account.account.amount.toNumber() / 1e9,
+        isComplete: account.account.isResolved,
+        isActive:
+          account.account.challenger.toString() ===
+          PublicKey.default.toString(), // Using string comparison for safety
         challenger: account.account.challenger.toString(),
-        createdAt: account.account.createdAt.toNumber(),
-        metadata: account.account.metadata, // Fetch metadata
+        createdAt: Date.now() / 1000,
+        metadata: "",
         stats: {
           matchId: "",
           playerStats: {
@@ -140,15 +140,13 @@ export const useChallenge = () => {
           },
         },
       }));
+
+      console.log("Transformed challenges:", challengeList);
       setChallenges(challengeList);
-      setLastFetch(now);
-      console.log("Fetched challenges:", challengeList);
       return challengeList;
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to fetch challenges"
-      );
-      return challenges;
+      console.error("Fetch error:", err);
+      return []; // Return empty array on error, not old state
     } finally {
       setLoading(false);
     }

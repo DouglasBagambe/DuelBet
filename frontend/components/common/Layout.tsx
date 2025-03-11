@@ -49,34 +49,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <div className="flex space-x-6 mr-6">
                 {/* Enhanced Nav Links */}
                 <div
-                  onClick={() => router.push("/lichess")}
-                  className={`cursor-pointer px-4 py-2 rounded-lg relative overflow-hidden group ${
-                    router.pathname === "/lichess"
-                      ? "text-white bg-blue-600/30"
-                      : "text-gray-300 hover:text-white"
-                  }`}
-                >
-                  <span className="relative z-10 flex items-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4 mr-1.5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"
-                      />
-                    </svg>
-                    Lichess Duel
-                  </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
-                </div>
-
-                <div
                   onClick={() => router.push("/h2h")}
                   className={`cursor-pointer px-4 py-2 rounded-lg relative overflow-hidden group ${
                     router.pathname === "/h2h"
@@ -100,6 +72,34 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                       />
                     </svg>
                     H2H Duel
+                  </span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+                </div>
+
+                <div
+                  onClick={() => router.push("/lichess")}
+                  className={`cursor-pointer px-4 py-2 rounded-lg relative overflow-hidden group ${
+                    router.pathname === "/lichess"
+                      ? "text-white bg-blue-600/30"
+                      : "text-gray-300 hover:text-white"
+                  }`}
+                >
+                  <span className="relative z-10 flex items-center">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4 mr-1.5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"
+                      />
+                    </svg>
+                    Lichess Duel
                   </span>
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
                 </div>
@@ -137,34 +137,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <div className="flex flex-col space-y-4">
                 <div
                   onClick={() => {
-                    router.push("/lichess");
-                    setMobileMenuOpen(false);
-                  }}
-                  className={`cursor-pointer rounded-lg p-3 flex items-center ${
-                    router.pathname === "/lichess"
-                      ? "bg-blue-600/30 text-white"
-                      : "text-gray-300 hover:text-white hover:bg-blue-500/10"
-                  }`}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 mr-3"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"
-                    />
-                  </svg>
-                  LiChess Duel
-                </div>
-
-                <div
-                  onClick={() => {
                     router.push("/h2h");
                     setMobileMenuOpen(false);
                   }}
@@ -189,6 +161,34 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     />
                   </svg>
                   H2H Duel
+                </div>
+
+                <div
+                  onClick={() => {
+                    router.push("/lichess");
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`cursor-pointer rounded-lg p-3 flex items-center ${
+                    router.pathname === "/lichess"
+                      ? "bg-blue-600/30 text-white"
+                      : "text-gray-300 hover:text-white hover:bg-blue-500/10"
+                  }`}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 mr-3"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"
+                    />
+                  </svg>
+                  LiChess Duel
                 </div>
 
                 <div className="pt-2 px-3">
