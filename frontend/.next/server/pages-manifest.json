@@ -3,6 +3,6 @@
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
   "/": "pages/index.js",
-  "/h2h": "pages/h2h.js",
+  "/1v1": "pages/1v1.js",
   "/lichess": "pages/lichess.js"
 }

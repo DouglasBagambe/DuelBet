@@ -8,7 +8,7 @@ export default function Home() {
       <h1 className="text-4xl font-bold text-white mb-8">Welcome to DuelBet</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl">
-        <Link href="/h2h">
+        <Link href="/1v1">
           <div className="bg-gradient-to-br from-purple-800/40 to-purple-600/20 p-6 rounded-xl border border-purple-500/30 backdrop-blur-sm hover:from-purple-700/50 hover:to-purple-500/30 transition-all cursor-pointer group">
             <div className="flex items-center mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-blue-600 rounded-lg flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
@@ -27,11 +27,11 @@ export default function Home() {
                   />
                 </svg>
               </div>
-              <h2 className="text-2xl font-bold text-white">H2H Duel</h2>
+              <h2 className="text-2xl font-bold text-white">1v1 Duel</h2>
             </div>
             <p className="text-gray-300">
               Create direct wagers with friends or opponents for any type of
-              competition or challenge.
+              competition or challenge on-chain.
             </p>
           </div>
         </Link>

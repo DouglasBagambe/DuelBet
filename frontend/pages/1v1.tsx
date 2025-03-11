@@ -1,4 +1,4 @@
-import Wager from "@/components/h2h/Wager";
+import Wager from "@/components/1v1/Wager";
 import { useState } from "react";
 
 export default function Home() {
