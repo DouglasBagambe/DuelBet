@@ -29,6 +29,11 @@ self.__BUILD_MANIFEST = {
       "static/chunks/webpack.js",
       "static/chunks/main.js",
       "static/chunks/pages/h2h.js"
+    ],
+    "/lichess": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/lichess.js"
     ]
   },
   "ampFirstPages": []

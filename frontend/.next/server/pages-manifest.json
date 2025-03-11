@@ -3,5 +3,6 @@
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
   "/h2h": "pages/h2h.js",
+  "/lichess": "pages/lichess.js",
   "/": "pages/index.js"
 }

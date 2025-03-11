@@ -80,15 +80,33 @@ export default function Wager() {
   };
 
   const fetchWagers = async () => {
-    if (!connected) return;
+    if (!publicKey) return;
+    setLoading(true);
     try {
-      console.log("Fetching wagers...");
       const program = getProgram();
       const wagers = await program.account.wager.all();
-      console.log("Wagers fetched:", wagers);
-      setWagers(wagers);
+      console.log("Fetched wagers raw data:", wagers); // Log raw data
+      // Map wagers to ensure correct field access
+      const mappedWagers = wagers.map((wager) => {
+        console.log("Wager account details:", wager.account); // Log account details
+        return {
+          ...wager,
+          account: {
+            ...wager.account,
+            option_a: (wager.account as any).option_a || "N/A", // Fallback for debugging
+            option_b: (wager.account as any).option_b || "N/A",
+            creator_pick:
+              (wager.account as any).creator_pick !== undefined
+                ? (wager.account as any).creator_pick
+                : false,
+          },
+        };
+      });
+      setWagers(mappedWagers);
     } catch (err) {
       console.error("Error fetching wagers:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -262,20 +280,52 @@ export default function Wager() {
     }
   };
 
-  const completeWager = async (wagerPubkey: string, result: number) => {
+  const completeWager = async (wagerPubkey: string, p0?: number) => {
     if (!publicKey) {
       alert("Please connect your wallet.");
       return;
     }
     setLoading(true);
     try {
-      console.log("Completing wager:", wagerPubkey, "with result:", result);
+      console.log("Completing wager:", wagerPubkey);
       const program = getProgram();
       const provider = getProvider();
       const wagerPublicKey = new PublicKey(wagerPubkey);
+      const wagerAccount = await program.account.wager.fetch(wagerPublicKey);
+
+      const eventId = (wagerAccount as any).eventId;
+      console.log("Event ID being fetched:", eventId);
+
+      const API_KEY = "3"; // Free test API key
+      const resultUrl = `https://www.thesportsdb.com/api/v1/json/${API_KEY}/lookupevent.php?id=${eventId}`;
+      const response = await fetch(resultUrl);
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch result for event ${eventId}: ${response.status}. Please enter the result manually.`
+        );
+      }
+      const data = await response.json();
+      const event = data.events?.[0];
+      if (!event) {
+        throw new Error(`No result found for event ${eventId}`);
+      }
+
+      let result: number;
+      const homeScore = parseInt(event.intHomeScore || "0", 10);
+      const awayScore = parseInt(event.intAwayScore || "0", 10);
+
+      if (homeScore > awayScore) {
+        result = 1; // Option A (home) wins
+      } else if (awayScore > homeScore) {
+        result = 2; // Option B (away) wins
+      } else {
+        result = 0; // Draw
+      }
+
+      console.log("Fetched result:", result);
 
       const instruction = await program.methods
-        .completeWager(result) // 0 = draw, 1 = optionA, 2 = optionB
+        .completeWager(result)
         .accounts({
           wager: wagerPublicKey,
           systemProgram: SystemProgram.programId,
@@ -295,7 +345,10 @@ export default function Wager() {
       const signature = await sendTransaction(
         transaction,
         provider.connection,
-        { skipPreflight: false, maxRetries: 3 }
+        {
+          skipPreflight: false,
+          maxRetries: 3,
+        }
       );
 
       console.log("Complete transaction sent:", signature);
@@ -313,10 +366,14 @@ export default function Wager() {
       setSelectedWager(null);
     } catch (err) {
       console.error("Error completing wager:", err);
-      alert(
+      const message =
         "Failed to complete wager: " +
-          (err instanceof Error ? err.message : "Unknown error")
-      );
+        (err instanceof Error ? err.message : "Unknown error");
+      alert(message);
+      if (message.includes("404")) {
+        // Reopen dialog for manual input if 404
+        setIsCompleteDialogOpen(true);
+      }
     } finally {
       setLoading(false);
     }
@@ -488,32 +545,41 @@ export default function Wager() {
             <AlertDialogHeader>
               <AlertDialogTitle>Select Winner</AlertDialogTitle>
               <AlertDialogDescription className="text-gray-400">
-                Select the outcome of this duel.
+                Select the outcome of this duel or let the system fetch it.
               </AlertDialogDescription>
             </AlertDialogHeader>
-            <div className="flex flex-wrap gap-2 mt-4">
+            <div className="flex flex-col gap-4 mt-4">
               <button
-                onClick={() => completeWager(wager.publicKey.toString(), 1)}
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg font-medium"
+                onClick={() => completeWager(wager.publicKey.toString())}
+                className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium"
                 disabled={loading}
               >
-                {wager.account.option_a} Wins
+                {loading ? "Fetching..." : "Fetch Result Automatically"}
               </button>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => completeWager(wager.publicKey.toString(), 1)}
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg font-medium"
+                  disabled={loading}
+                >
+                  {wager.account.option_a} Wins
+                </button>
+                <button
+                  onClick={() => completeWager(wager.publicKey.toString(), 2)}
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg font-medium"
+                  disabled={loading}
+                >
+                  {wager.account.option_b} Wins
+                </button>
+              </div>
               <button
-                onClick={() => completeWager(wager.publicKey.toString(), 2)}
-                className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg font-medium"
+                onClick={() => completeWager(wager.publicKey.toString(), 0)}
+                className="w-full mt-2 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg font-medium"
                 disabled={loading}
               >
-                {wager.account.option_b} Wins
+                Draw
               </button>
             </div>
-            <button
-              onClick={() => completeWager(wager.publicKey.toString(), 0)}
-              className="w-full mt-2 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg font-medium"
-              disabled={loading}
-            >
-              Draw
-            </button>
             <AlertDialogFooter className="mt-4">
               <AlertDialogCancel className="bg-gray-700 hover:bg-gray-600 text-white border-gray-600">
                 Cancel
@@ -540,8 +606,6 @@ export default function Wager() {
   };
 
   // Quick Duels Component
-  // Add this to your Wager.tsx file
-
   const QuickDuels = () => {
     const { publicKey, sendTransaction, connected } = useWallet();
     const [selectedSport, setSelectedSport] = useState("all");
@@ -553,156 +617,157 @@ export default function Wager() {
     const [amount, setAmount] = useState("");
     const [searchActive, setSearchActive] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
+    const [quickDuels, setQuickDuels] = useState<QuickDuel[]>([]);
+    const [loading, setLoading] = useState(true);
 
     interface QuickDuel {
       id: number;
       sport: string;
       description: string;
-      option_a: string;
-      option_b: string;
-      eventId: string;
+      optionA: string; // Updated to camelCase
+      optionB: string; // Updated to camelCase
+      eventId: string; // Updated to camelCase
     }
 
-    // Sports categories for filtering
+    // Updated sports categories for filtering
     const sports = [
       { id: "all", name: "All" },
       { id: "soccer", name: "Soccer" },
+      { id: "basketball", name: "Basketball" },
+      { id: "tennis", name: "Tennis" },
       { id: "ufc", name: "UFC" },
       { id: "boxing", name: "Boxing" },
-      { id: "nba", name: "NBA" },
+      { id: "motorsport", name: "Motorsport" },
+      { id: "cricket", name: "Cricket" },
+      { id: "rugby", name: "Rugby" },
     ];
 
-    // Quick duel events data
-    const quickDuels = [
-      {
-        id: 1,
-        sport: "soccer",
-        description: "Liverpool vs Man United",
-        option_a: "Liverpool",
-        option_b: "Man United",
-        eventId: "soccer_123",
-      },
-      {
-        id: 2,
-        sport: "soccer",
-        description: "Real Madrid vs Barcelona",
-        option_a: "Real Madrid",
-        option_b: "Barcelona",
-        eventId: "soccer_124",
-      },
-      {
-        id: 3,
-        sport: "ufc",
-        description: "Jon Jones vs Stipe Miocic",
-        option_a: "Jon Jones",
-        option_b: "Stipe Miocic",
-        eventId: "ufc_301",
-      },
-      {
-        id: 4,
-        sport: "ufc",
-        description: "Israel Adesanya vs Dricus Du Plessis",
-        option_a: "Adesanya",
-        option_b: "Du Plessis",
-        eventId: "ufc_302",
-      },
-      {
-        id: 5,
-        sport: "boxing",
-        description: "Tyson Fury vs Oleksandr Usyk",
-        option_a: "Tyson Fury",
-        option_b: "Oleksandr Usyk",
-        eventId: "boxing_201",
-      },
-      {
-        id: 6,
-        sport: "boxing",
-        description: "Canelo Alvarez vs David Benavidez",
-        option_a: "Canelo",
-        option_b: "Benavidez",
-        eventId: "boxing_202",
-      },
-      {
-        id: 7,
-        sport: "nba",
-        description: "Lakers vs Celtics",
-        option_a: "Lakers",
-        option_b: "Celtics",
-        eventId: "nba_401",
-      },
-      {
-        id: 8,
-        sport: "nba",
-        description: "Warriors vs Nuggets",
-        option_a: "Warriors",
-        option_b: "Nuggets",
-        eventId: "nba_402",
-      },
-      {
-        id: 9,
-        sport: "soccer",
-        description: "Arsenal vs Chelsea",
-        option_a: "Arsenal",
-        option_b: "Chelsea",
-        eventId: "soccer_125",
-      },
-      {
-        id: 10,
-        sport: "soccer",
-        description: "Bayern vs Dortmund",
-        option_a: "Bayern",
-        option_b: "Dortmund",
-        eventId: "soccer_126",
-      },
-      {
-        id: 11,
-        sport: "ufc",
-        description: "Conor McGregor vs Michael Chandler",
-        option_a: "McGregor",
-        option_b: "Chandler",
-        eventId: "ufc_303",
-      },
-      {
-        id: 12,
-        sport: "ufc",
-        description: "Alex Pereira vs Jamahal Hill",
-        option_a: "Pereira",
-        option_b: "Hill",
-        eventId: "ufc_304",
-      },
-      {
-        id: 13,
-        sport: "boxing",
-        description: "Anthony Joshua vs Francis Ngannou",
-        option_a: "Joshua",
-        option_b: "Ngannou",
-        eventId: "boxing_203",
-      },
-      {
-        id: 14,
-        sport: "boxing",
-        description: "Terence Crawford vs Errol Spence",
-        option_a: "Crawford",
-        option_b: "Spence",
-        eventId: "boxing_204",
-      },
-      {
-        id: 15,
-        sport: "nba",
-        description: "Bucks vs 76ers",
-        option_a: "Bucks",
-        option_b: "76ers",
-        eventId: "nba_403",
-      },
-      {
-        id: 16,
-        sport: "nba",
-        description: "Suns vs Mavericks",
-        option_a: "Suns",
-        option_b: "Mavericks",
-        eventId: "nba_404",
-      },
-    ];
+    // Fetch all leagues and events from TheSportsDB
+    useEffect(() => {
+      const fetchAllEvents = async () => {
+        setLoading(true);
+        const API_KEY = "3"; // Free test API key
+        const fetchedDuels: QuickDuel[] = [];
+        let duelId = 1;
+
+        try {
+          const leaguesUrl = `https://www.thesportsdb.com/api/v1/json/${API_KEY}/all_leagues.php`;
+          const leaguesResponse = await fetch(leaguesUrl);
+          if (!leaguesResponse.ok) {
+            throw new Error(
+              `Failed to fetch leagues: ${leaguesResponse.status}`
+            );
+          }
+          const leaguesData: { leagues: any[] } = await leaguesResponse.json();
+          const leagues = leaguesData.leagues || [];
+
+          for (const league of leagues) {
+            const sport = league.strSport.toLowerCase();
+            if (
+              ![
+                "soccer",
+                "basketball",
+                "tennis",
+                "mma",
+                "motorsport",
+                "cricket",
+                "rugby",
+              ].includes(sport)
+            ) {
+              continue;
+            }
+
+            const leagueId = league.idLeague;
+            const eventsUrl = `https://www.thesportsdb.com/api/v1/json/${API_KEY}/eventsnextleague.php?id=${leagueId}`;
+            const eventsResponse = await fetch(eventsUrl);
+            if (!eventsResponse.ok) {
+              console.error(
+                `Failed to fetch events for league ${leagueId}: ${eventsResponse.status}`
+              );
+              continue;
+            }
+            const eventsData = await eventsResponse.json();
+            const events = eventsData.events || [];
+
+            events.forEach((event: any) => {
+              let sportType = sport;
+              if (sport === "mma") {
+                sportType = event.strLeague === "UFC" ? "ufc" : "boxing";
+              }
+              // Only add duel if both teams are present
+              if (event.strHomeTeam && event.strAwayTeam) {
+                console.log("Fetched event ID:", event.idEvent);
+                fetchedDuels.push({
+                  id: duelId++,
+                  sport: sportType,
+                  description: event.strEvent,
+                  optionA: event.strHomeTeam,
+                  optionB: event.strAwayTeam,
+                  eventId: event.idEvent,
+                });
+              }
+            });
+
+            await new Promise((resolve) => setTimeout(resolve, 500));
+          }
+
+          const today = new Date();
+          const dateRange = 7;
+          for (let i = 0; i < dateRange; i++) {
+            const date = new Date(today);
+            date.setDate(today.getDate() + i);
+            const dateStr = date.toISOString().split("T")[0];
+
+            const tennisUrl = `https://www.thesportsdb.com/api/v1/json/${API_KEY}/eventsday.php?d=${dateStr}&s=Tennis`;
+            const tennisResponse = await fetch(tennisUrl);
+            if (tennisResponse.ok) {
+              const tennisResponseData = await tennisResponse.json();
+              const tennisEvents = tennisResponseData.events || [];
+              tennisEvents.forEach((event: any) => {
+                console.log("Fetched tennis event ID:", event.idEvent); // Log event ID
+                fetchedDuels.push({
+                  id: duelId++,
+                  sport: "tennis",
+                  description: event.strEvent,
+                  optionA: event.strHomeTeam || "N/A",
+                  optionB: event.strAwayTeam || "N/A",
+                  eventId: event.idEvent,
+                });
+              });
+            }
+
+            const boxingUrl = `https://www.thesportsdb.com/api/v1/json/${API_KEY}/eventsday.php?d=${dateStr}&s=Fighting`;
+            const boxingResponse = await fetch(boxingUrl);
+            if (boxingResponse.ok) {
+              const boxingResponseData = await boxingResponse.json();
+              const boxingEvents = boxingResponseData.events || [];
+              boxingEvents.forEach((event: any) => {
+                if (event.strLeague === "UFC") return;
+                console.log("Fetched boxing event ID:", event.idEvent); // Log event ID
+                fetchedDuels.push({
+                  id: duelId++,
+                  sport: "boxing",
+                  description: event.strEvent,
+                  optionA: event.strHomeTeam || "N/A",
+                  optionB: event.strAwayTeam || "N/A",
+                  eventId: event.idEvent,
+                });
+              });
+            }
+
+            await new Promise((resolve) => setTimeout(resolve, 500));
+          }
+
+          setQuickDuels(fetchedDuels);
+        } catch (err) {
+          console.error("Error fetching events:", err);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchAllEvents();
+    }, []);
 
     // Filter duels based on selected sport and search query
     const filteredDuels = quickDuels
@@ -713,8 +778,8 @@ export default function Wager() {
           : duel.description
               .toLowerCase()
               .includes(searchQuery.toLowerCase()) ||
-            duel.option_a.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            duel.option_b.toLowerCase().includes(searchQuery.toLowerCase())
+            duel.optionA.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            duel.optionB.toLowerCase().includes(searchQuery.toLowerCase())
       );
 
     const getProvider = () => {
@@ -765,10 +830,10 @@ export default function Wager() {
           .initializeWager(
             lamports,
             selectedQuickDuel.description,
-            selectedQuickDuel.option_a,
-            selectedQuickDuel.option_b,
+            selectedQuickDuel.optionA, // Updated to camelCase
+            selectedQuickDuel.optionB, // Updated to camelCase
             userPick === "A",
-            selectedQuickDuel.eventId
+            selectedQuickDuel.eventId // Updated to camelCase
           )
           .accounts({
             wager: wagerAccount.publicKey,
@@ -855,35 +920,17 @@ export default function Wager() {
               </button>
             </div>
           ) : (
-            <div className="flex items-center w-full">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={handleSearch}
-                className="w-full bg-gray-700 rounded-lg border border-gray-600 p-1 text-sm text-white pr-8"
-                placeholder="Search games..."
-                autoFocus
-              />
-              <button
-                onClick={() => setSearchActive(true)}
-                className="ml-1 p-1 bg-gray-700 rounded-lg hover:bg-gray-650 text-gray-300"
-              >
-                <Search className="w-4 h-4" />
-              </button>
-            </div>
-            // <button
-            //   onClick={() => setSearchActive(true)}
-            //   className="flex p-1 bg-gray-700 rounded-lg hover:bg-gray-650 text-gray-300 text-sm"
-            // >
-            //   {/* <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-lg"></button> */}
-            //   <Search className="w-4 h-4" /> Search Game
-            // </button>
+            <button
+              onClick={() => setSearchActive(true)}
+              className="p-1 bg-gray-700 rounded-lg hover:bg-gray-650 text-gray-300"
+            >
+              <Search className="w-4 h-4" />
+            </button>
           )}
         </div>
 
         {/* Sport filters */}
-        <div className="flex gap-1 mb-2">
+        <div className="flex gap-1 mb-2 flex-wrap">
           {sports.map((sport) => (
             <button
               key={sport.id}
@@ -902,9 +949,13 @@ export default function Wager() {
         {/* Quick duel list */}
         <div
           className="flex-1 overflow-y-auto pr-1"
-          style={{ maxHeight: "39vh" }}
+          style={{ maxHeight: "43vh" }}
         >
-          {filteredDuels.length > 0 ? (
+          {loading ? (
+            <div className="flex flex-col items-center justify-center h-full">
+              <p className="text-gray-400 text-sm">Loading events...</p>
+            </div>
+          ) : filteredDuels.length > 0 ? (
             <div className="space-y-1">
               {filteredDuels.map((duel) => (
                 <div
@@ -915,10 +966,13 @@ export default function Wager() {
                     setIsDialogOpen(true);
                   }}
                 >
-                  <div className="flex items-center gap-2">
-                    <GamepadIcon className="w-4 h-4 text-blue-400" />
-                    <div className="overflow-hidden">
-                      <p className="text-white font-medium text-sm truncate">
+                  <div className="flex items-center gap-2 w-full">
+                    <GamepadIcon className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                    <div className="flex-1 overflow-hidden">
+                      <p
+                        className="text-white font-medium text-sm truncate"
+                        style={{ maxWidth: "220px" }} // Fixed width for truncation
+                      >
                         {duel.description}
                       </p>
                       <p className="text-gray-400 text-xs">
@@ -973,7 +1027,7 @@ export default function Wager() {
                       : "bg-gray-700 hover:bg-gray-650 text-white"
                   }`}
                 >
-                  {selectedQuickDuel?.option_a}
+                  {selectedQuickDuel?.optionA}
                 </button>
                 <button
                   onClick={() => setUserPick("B")}
@@ -983,7 +1037,7 @@ export default function Wager() {
                       : "bg-gray-700 hover:bg-gray-650 text-white"
                   }`}
                 >
-                  {selectedQuickDuel?.option_b}
+                  {selectedQuickDuel?.optionB}
                 </button>
               </div>
             </div>
@@ -1090,7 +1144,7 @@ export default function Wager() {
                             {getWagerStatusIcon(wager)}
                             <div className="overflow-hidden">
                               <p className="text-white font-medium truncate">
-                                {wager.account.description}
+                                {wager.account.description || "N/A"}
                               </p>
                               <p className="text-gray-400 text-sm">
                                 {getWagerStatusText(wager)}
@@ -1111,7 +1165,7 @@ export default function Wager() {
                         <DialogContent className="bg-gray-800 border border-gray-700 text-white">
                           <DialogHeader>
                             <DialogTitle>
-                              {selectedWager.account.description}
+                              {selectedWager.account.description || "N/A"}
                             </DialogTitle>
                             <DialogDescription className="text-gray-400">
                               Duel details and actions
@@ -1132,8 +1186,8 @@ export default function Wager() {
                               <div className="flex justify-between items-center mb-2">
                                 <span className="text-gray-400">Match:</span>
                                 <span className="text-white">
-                                  {selectedWager.account.option_a} vs{" "}
-                                  {selectedWager.account.option_b}
+                                  {selectedWager.account.optionA} vs{" "}
+                                  {selectedWager.account.optionB}
                                 </span>
                               </div>
                               <div className="flex justify-between items-center mb-2">
@@ -1141,11 +1195,24 @@ export default function Wager() {
                                   Creator bet:
                                 </span>
                                 <span className="text-white">
-                                  {selectedWager.account.creator_pick
-                                    ? selectedWager.account.option_a
-                                    : selectedWager.account.option_b}
+                                  {selectedWager.account.creatorPick
+                                    ? selectedWager.account.optionA
+                                    : selectedWager.account.optionB}
                                 </span>
                               </div>
+                              {selectedWager.account.challenger.toString() !==
+                                PublicKey.default.toString() && (
+                                <div className="flex justify-between items-center mb-2">
+                                  <span className="text-gray-400">
+                                    Challenger bet:
+                                  </span>
+                                  <span className="text-white">
+                                    {selectedWager.account.challengerPick
+                                      ? selectedWager.account.optionA
+                                      : selectedWager.account.optionB}
+                                  </span>
+                                </div>
+                              )}
                               <div className="flex justify-between items-center mb-2">
                                 <span className="text-gray-400">Creator:</span>
                                 <span className="text-white">
@@ -1167,7 +1234,7 @@ export default function Wager() {
                                   </span>
                                 </div>
                               )}
-                              {selectedWager.account.is_complete && (
+                              {selectedWager.account.isComplete && (
                                 <div className="flex justify-between items-center mb-2">
                                   <span className="text-gray-400">Result:</span>
                                   <span
@@ -1180,8 +1247,8 @@ export default function Wager() {
                                     {selectedWager.account.result === 0
                                       ? "Draw"
                                       : selectedWager.account.result === 1
-                                      ? `${selectedWager.account.option_a} won`
-                                      : `${selectedWager.account.option_b} won`}
+                                      ? `${selectedWager.account.optionA} won`
+                                      : `${selectedWager.account.optionB} won`}
                                   </span>
                                 </div>
                               )}
@@ -1189,7 +1256,7 @@ export default function Wager() {
                                 <span className="text-gray-400">Status:</span>
                                 <span
                                   className={`font-medium ${
-                                    selectedWager.account.is_complete
+                                    selectedWager.account.isComplete
                                       ? "text-green-400"
                                       : selectedWager.account.challenger.toString() !==
                                         PublicKey.default.toString()
