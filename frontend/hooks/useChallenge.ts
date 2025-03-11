@@ -1,7 +1,12 @@
 // frontend/hooks/useChallenge.ts
 import { useEffect, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { PublicKey, Transaction, SystemProgram } from "@solana/web3.js";
+import {
+  PublicKey,
+  Transaction,
+  SystemProgram,
+  LAMPORTS_PER_SOL,
+} from "@solana/web3.js";
 import { useProgram } from "./useProgram";
 import {
   CreateChallengeParams,
@@ -105,31 +110,26 @@ export const useChallenge = () => {
   };
 
   const getChallenges = async () => {
-    if (!wallet.connected || !program) {
-      console.log("Wallet or program not ready");
-      return [];
-    }
-
+    if (!wallet.connected || !program) return [];
     try {
       setLoading(true);
-      const allChallenges = await program.account.wager.all();
+      // Make sure you're querying the right account type - should be 'challenge' not 'wager'
+      const allChallenges = await program.account.challenge.all();
       console.log("Raw challenges:", allChallenges);
-
-      if (allChallenges.length === 0) {
-        console.log("No challenges found on-chain");
-      }
 
       const challengeList = allChallenges.map((account) => ({
         id: account.publicKey.toString(),
         creator: account.account.creator.toString(),
-        lichessUsername: account.account.description || "Unknown",
-        wagerAmount: account.account.amount.toNumber() / 1e9,
-        isComplete: account.account.isResolved,
-        isActive:
-          account.account.challenger.toString() ===
-          PublicKey.default.toString(), // Using string comparison for safety
+        lichessUsername:
+          "Challenge #" + account.publicKey.toString().substring(0, 4),
+        // Map the correct field names from your Challenge struct
+        wagerAmount: account.account.wager_amount
+          ? account.account.wager_amount.toNumber() / LAMPORTS_PER_SOL
+          : 0,
+        isComplete: account.account.is_complete === 1,
+        isActive: account.account.is_active === 1,
         challenger: account.account.challenger.toString(),
-        createdAt: Date.now() / 1000,
+        createdAt: account.account.created_at,
         metadata: "",
         stats: {
           matchId: "",

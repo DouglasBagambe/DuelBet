@@ -80,6 +80,37 @@ const PlayerSearch: React.FC<PlayerSearchProps> = ({
     Challenge | undefined
   >(undefined);
 
+  const [activeTab, setActiveTab] = useState("Bullet");
+  const [activeControl, setActiveControl] = useState("1+0");
+
+  // Helper function to get time controls based on game type
+  const getTimeControls = (tab: string) => {
+    const controls = {
+      Bullet: ["1+0", "2+1"],
+      Blitz: ["3+0", "3+2", "5+0", "5+3"],
+      Rapid: ["10+0", "10+5", "15+10"],
+      Classical: ["30+0", "30+20"],
+    };
+    return controls[tab as keyof typeof controls] || [];
+  };
+
+  // Helper function to filter challenges
+  const filterChallenges = (
+    challenge: Challenge,
+    tab: string,
+    control: string
+  ) => {
+    const speedMap = {
+      Bullet: ["1+0", "2+1"].includes(control),
+      Blitz: ["3+0", "3+2", "5+0", "5+3"].includes(control),
+      Rapid: ["10+0", "10+5", "15+10"].includes(control),
+      Classical: ["30+0", "30+20"].includes(control),
+    };
+    return (
+      speedMap[tab as keyof typeof speedMap] && challenge.speed === control
+    );
+  };
+
   const { program } = useProgram();
 
   useEffect(() => {
@@ -366,7 +397,7 @@ const PlayerSearch: React.FC<PlayerSearchProps> = ({
   );
 
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div className="min-h-[80vh] bg-gray-900">
       {/* Top Bar */}
       <nav className="bg-gray-800 border-b border-gray-700 p-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -526,43 +557,92 @@ const PlayerSearch: React.FC<PlayerSearchProps> = ({
             </div>
           </div>
 
-          {/* Right Column - Match History */}
+          {/* Right Column - Challenge Status */}
           <div className="col-span-12 lg:col-span-8">
-            {/* Challenge Status with Create Button */}
-            {/* There should be a viewing of the available challenegs here, and a button to create a new challenge plus another small icon for refreshing the challeneg list. */}
             <div className="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700">
+              {/* Header with Create Button and Refresh */}
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-white flex items-center gap-3">
                   <Sword className="w-6 h-6 text-purple-400" />
                   Challenge Status
                 </h2>
-                <button
-                  onClick={handleRefreshChallenges}
-                  disabled={challengeLoading}
-                  className="text-gray-400 hover:text-white transition-colors disabled:opacity-50"
-                  title="Refresh Challenges"
-                >
-                  <RefreshCw
-                    className={`w-5 h-5 ${
-                      challengeLoading ? "animate-spin" : ""
-                    }`}
-                  />
-                </button>
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={() => setIsCreateChallengeOpen(true)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-medium py-2 px-4 rounded-lg transition-all flex items-center gap-2 shadow-lg hover:shadow-xl"
+                  >
+                    <Plus className="w-5 h-5" />
+                    New Challenge
+                  </button>
+                  <button
+                    onClick={handleRefreshChallenges}
+                    disabled={challengeLoading}
+                    className="text-gray-400 hover:text-white transition-colors disabled:opacity-50"
+                    title="Refresh Challenges"
+                  >
+                    <RefreshCw
+                      className={`w-5 h-5 ${
+                        challengeLoading ? "animate-spin" : ""
+                      }`}
+                    />
+                  </button>
+                </div>
               </div>
 
-              <ChallengeList
-                challenges={challenges} // Use challenges from useChallenge
-                onViewChallenge={handleViewChallenge}
-                onAcceptChallenge={handleAcceptChallenge}
-              />
+              {/* Tab Navigation */}
+              <div className="mb-4">
+                <div className="flex space-x-2 mb-2">
+                  {["All", "Bullet", "Blitz", "Rapid", "Classical"].map(
+                    (type) => (
+                      <button
+                        key={type}
+                        onClick={() => {
+                          setActiveTab(type);
+                          setActiveControl(type === "All" ? "" : activeControl);
+                        }}
+                        className={`px-4 py-2 rounded-t-lg transition-all duration-300 ${
+                          activeTab === type
+                            ? "bg-purple-600 text-white"
+                            : "bg-gray-700 text-gray-400 hover:bg-gray-600"
+                        }`}
+                      >
+                        {type}
+                      </button>
+                    )
+                  )}
+                </div>
+                <div className="flex space-x-2">
+                  {activeTab !== "All" &&
+                    getTimeControls(activeTab).map((control) => (
+                      <button
+                        key={control}
+                        onClick={() => setActiveControl(control)}
+                        className={`px-3 py-1 rounded transition-all duration-300 text-sm ${
+                          activeControl === control
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-700 text-gray-400 hover:bg-gray-600"
+                        }`}
+                      >
+                        {control}
+                      </button>
+                    ))}
+                </div>
+              </div>
 
-              <button
-                onClick={() => setIsCreateChallengeOpen(true)}
-                className="mt-4 w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-4 rounded-lg transition-all flex items-center justify-center gap-2"
-              >
-                <Plus className="w-5 h-5" />
-                Create New Challenge
-              </button>
+              {/* Scrollable Challenge List */}
+              <div className="h-[60vh] overflow-y-auto">
+                <ChallengeList
+                  challenges={
+                    activeTab === "All"
+                      ? challenges
+                      : challenges.filter((c) =>
+                          filterChallenges(c, activeTab, activeControl)
+                        )
+                  }
+                  onViewChallenge={handleViewChallenge}
+                  onAcceptChallenge={handleAcceptChallenge}
+                />
+              </div>
             </div>
           </div>
         </div>

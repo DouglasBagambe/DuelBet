@@ -33,6 +33,10 @@ import {
 import {
   Sword,
   Trophy,
+  Calendar,
+  Hash,
+  Users,
+  ExternalLink,
   User,
   Wallet as WalletIcon,
   Clock,
@@ -48,6 +52,7 @@ import { toast } from "react-hot-toast";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { LichessPlayer, Challenge, LichessMatchStats } from "@/types";
 import { PublicKey } from "@solana/web3.js";
+import ChessCard from "./ChessCard";
 
 // Create Challenge Dialog Component
 const CreateChallengeDialog: React.FC<{
@@ -362,112 +367,93 @@ const ChallengeList: React.FC<{
   onAcceptChallenge: (challengeId: string) => void;
 }> = ({ challenges, onViewChallenge, onAcceptChallenge }) => {
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {challenges.length === 0 ? (
-        <div className="bg-gray-700/30 border border-gray-600 rounded-lg p-6 text-center">
-          <Crown className="w-12 h-12 text-gray-500 mx-auto mb-3" />
-          <p className="text-gray-400">No active challenges available</p>
-          <p className="text-gray-500 text-sm mt-2">
-            Create a challenge to get started
-          </p>
+        <div className="bg-gray-700/30 border border-gray-600 rounded-lg p-4 text-center">
+          <Crown className="w-10 h-10 text-gray-500 mx-auto mb-2" />
+          <p className="text-gray-400">No challenges available</p>
         </div>
       ) : (
         challenges.map((challenge) => (
+          // <ChessCard />
+
           <Card
             key={challenge.id}
-            className="bg-gray-700/50 border border-gray-600 hover:border-blue-500/50 transition-colors"
+            className="bg-gradient-to-r from-gray-800 to-gray-700 border border-purple-500/30 hover:border-purple-400 transition-all duration-300 cursor-pointer"
+            onClick={() => onViewChallenge(challenge)}
           >
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <div>
-                <CardTitle className="text-white text-lg font-semibold flex items-center gap-2">
-                  <Crown className="w-5 h-5 text-blue-400" />
-                  Chess Challenge
-                </CardTitle>
-                <CardDescription className="text-gray-400">
-                  ID: {challenge.id.substring(0, 8)}...
-                </CardDescription>
-              </div>
-              <div className="flex items-center gap-2">
+            <CardHeader className="p-3">
+              <div className="flex items-center justify-between">
+                {/* Creator info */}
+                <div className="flex items-center gap-2">
+                  <User className="w-5 h-5 text-purple-400" />
+                  <span className="text-white font-semibold truncate max-w-[150px]">
+                    {challenge.lichessUsername || "Anonymous"}
+                  </span>
+                </div>
+
+                {/* Challenge status indicator */}
                 {challenge.isComplete ? (
-                  <span className="bg-green-500/20 text-green-300 text-xs py-1 px-2 rounded-full flex items-center gap-1">
-                    <CheckCircle className="w-3 h-3" />
+                  <span className="bg-green-500/20 text-green-300 text-xs py-1 px-2 rounded-full">
                     Completed
                   </span>
                 ) : challenge.challenger ? (
-                  <span className="bg-yellow-500/20 text-yellow-300 text-xs py-1 px-2 rounded-full flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
+                  <span className="bg-yellow-500/20 text-yellow-300 text-xs py-1 px-2 rounded-full">
                     In Progress
                   </span>
                 ) : (
-                  <span className="bg-blue-500/20 text-blue-300 text-xs py-1 px-2 rounded-full flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
+                  <span className="bg-blue-500/20 text-blue-300 text-xs py-1 px-2 rounded-full">
                     Open
                   </span>
                 )}
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-y-2 gap-x-4 mb-3 text-sm">
-                <div className="flex items-center gap-2">
-                  <User className="w-4 h-4 text-blue-400" />
-                  <span className="text-gray-300">Creator:</span>
-                  <span className="text-white font-medium truncate">
-                    {challenge.creator}
+
+            <CardContent className="px-3 pb-2 pt-0">
+              <div className="flex items-center justify-between text-sm">
+                {/* Creator */}
+                <div className="flex items-center gap-1">
+                  <Trophy className="w-4 h-4 text-amber-400" />
+                  <span className="text-gray-300">
+                    {challenge.creator || "Unknown"}
                   </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Wallet className="w-4 h-4 text-purple-400" />
-                  <span className="text-gray-300">Wager:</span>
-                  <span className="text-white font-medium">
+
+                {/* Time controls */}
+                <div className="flex items-center gap-1">
+                  <Clock className="w-4 h-4 text-green-400" />
+                  <span className="text-gray-300">
+                    {typeof challenge.timeControl === "string"
+                      ? challenge.timeControl
+                      : challenge.timeControl?.show || "10+0"}
+                  </span>
+                </div>
+
+                {/* Wager amount */}
+                <div className="flex items-center gap-1">
+                  <Wallet className="w-4 h-4 text-blue-400" />
+                  <span className="text-gray-300">
                     {challenge.wagerAmount} SOL
                   </span>
                 </div>
-                <div className="flex items-center gap-2 col-span-2">
-                  <User className="w-4 h-4 text-blue-400" />
-                  <span className="text-gray-300">Lichess Username:</span>
-                  <span className="text-white font-medium">
-                    {challenge.lichessUsername}
-                  </span>
-                </div>
-                {challenge.speed && (
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-blue-400" />
-                    <span className="text-gray-300">Speed:</span>
-                    <span className="text-white font-medium">
-                      {challenge.speed}
-                    </span>
-                  </div>
-                )}
-                {challenge.timeControl?.show && (
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-blue-400" />
-                    <span className="text-gray-300">Time:</span>
-                    <span className="text-white font-medium">
-                      {challenge.timeControl.show}
-                    </span>
-                  </div>
-                )}
               </div>
             </CardContent>
-            <CardFooter className="flex gap-2 pt-0">
-              <button
-                onClick={() => onViewChallenge(challenge)}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg flex items-center justify-center gap-2"
-              >
-                <Eye className="w-4 h-4" />
-                View Details
-              </button>
+
+            <CardFooter className="p-3 pt-1 flex justify-end">
               {!challenge.challenger && !challenge.isComplete && (
                 <button
-                  onClick={() => onAcceptChallenge(challenge.id)}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg flex items-center justify-center gap-2"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAcceptChallenge(challenge.id);
+                  }}
+                  className="bg-green-600 hover:bg-green-700 text-white py-1 px-3 rounded-full text-sm flex items-center gap-1 transition-all"
                 >
-                  <Sword className="w-4 h-4" />
-                  Accept
+                  <Sword className="w-4 h-4" /> Accept
                 </button>
               )}
             </CardFooter>
           </Card>
+          //////
         ))
       )}
     </div>
@@ -476,7 +462,7 @@ const ChallengeList: React.FC<{
 
 // Enhanced Challenge Details Dialog Component
 const ChallengeDetailsDialog: React.FC<{
-  challenge?: Challenge; // Updated Challenge type includes isActive and createdAt
+  challenge?: Challenge;
   isOpen: boolean;
   onClose: () => void;
   onAcceptChallenge: (challengeId: string) => void;
@@ -555,195 +541,315 @@ const ChallengeDetailsDialog: React.FC<{
 
   if (!challenge) return null;
 
+  // Helper function to get status badge color and text
+  const getStatusInfo = () => {
+    if (challenge.isComplete) {
+      return { color: "bg-green-500/20 text-green-400", text: "Completed" };
+    } else if (challenge.challenger !== PublicKey.default.toString()) {
+      return { color: "bg-yellow-500/20 text-yellow-400", text: "In Progress" };
+    } else if (challenge.isActive) {
+      return { color: "bg-blue-500/20 text-blue-400", text: "Open" };
+    } else {
+      return { color: "bg-red-500/20 text-red-400", text: "Inactive" };
+    }
+  };
+
+  const statusInfo = getStatusInfo();
+  const showAcceptButton =
+    challenge.isActive &&
+    challenge.challenger === PublicKey.default.toString() &&
+    !challenge.isComplete;
+
+  const showCompleteButtons =
+    canComplete &&
+    challenge.challenger !== PublicKey.default.toString() &&
+    !challenge.isComplete;
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="bg-gray-800 text-white border border-gray-700 max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold flex items-center gap-3">
-              <Trophy className="w-6 h-6 text-yellow-400" />
-              Chess Challenge Details
-            </DialogTitle>
-            <DialogDescription className="text-gray-400 flex items-center gap-2">
-              <span>ID: {challenge.id}</span>
-              <span className="text-gray-500">•</span>
-              <span>
-                Status:
-                {challenge.isComplete ? (
-                  <span className="text-green-400 ml-1">Completed</span>
-                ) : challenge.challenger !== PublicKey.default.toString() ? (
-                  <span className="text-yellow-400 ml-1">In Progress</span>
-                ) : challenge.isActive ? (
-                  <span className="text-blue-400 ml-1">Open</span>
-                ) : (
-                  <span className="text-red-400 ml-1">Inactive</span>
-                )}
-              </span>
-              <span className="text-gray-500">•</span>
-              <span>
-                Created:{" "}
-                {new Date(challenge.createdAt * 1000).toLocaleDateString()}
-              </span>
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            {/* Main challenge info */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-gray-700/50 p-4 rounded-lg">
-                <div className="text-gray-400 text-sm mb-1">Creator</div>
-                <div className="text-white flex items-center gap-2">
-                  <User className="w-4 h-4 text-blue-400" />
-                  {challenge.creator}
-                </div>
+        <DialogContent className="bg-gray-900 text-white border border-gray-700 max-w-2xl p-0 overflow-hidden">
+          {/* Header with gradient background */}
+          <div className="bg-gradient-to-r from-gray-800 to-gray-900 p-6 border-b border-gray-700">
+            <DialogHeader className="mb-0">
+              <div className="flex items-center justify-between">
+                <DialogTitle className="text-2xl font-bold flex items-center gap-3">
+                  <Trophy className="w-7 h-7 text-yellow-400" />
+                  Chess Challenge
+                </DialogTitle>
+                <span
+                  className={`px-3 py-1 rounded-full text-sm font-medium ${statusInfo.color}`}
+                >
+                  {statusInfo.text}
+                </span>
               </div>
-              <div className="bg-gray-700/50 p-4 rounded-lg">
-                <div className="text-gray-400 text-sm mb-1">Wager</div>
-                <div className="text-white flex items-center gap-2">
-                  <WalletIcon className="w-4 h-4 text-purple-400" />
-                  {challenge.wagerAmount} SOL
+              <DialogDescription className="text-gray-400 mt-2">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-1">
+                  <div className="flex items-center gap-1">
+                    <Calendar className="w-4 h-4 opacity-70" />
+                    <span>
+                      {new Date(
+                        challenge.createdAt * 1000
+                      ).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Hash className="w-4 h-4 opacity-70" />
+                    <span className="font-mono text-xs">
+                      {challenge.id.substring(0, 12)}...
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </DialogDescription>
+            </DialogHeader>
+          </div>
 
-            {/* Lichess username */}
-            <div className="bg-gray-700/50 p-4 rounded-lg">
-              <div className="text-gray-400 text-sm mb-1">Lichess Username</div>
-              <div className="text-white flex items-center gap-2">
-                <User className="w-4 h-4 text-blue-400" />
-                {challenge.lichessUsername}
-              </div>
-            </div>
-            {challenge.metadata && (
-              <div className="bg-gray-700/50 p-4 rounded-lg mt-4">
-                <div className="text-gray-400 text-sm mb-1">Challenge Link</div>
-                <div className="text-white flex items-center gap-2">
-                  <Link className="w-4 h-4 text-blue-400" />{" "}
-                  {/* Assuming you have a Link icon */}
-                  <a
-                    href={challenge.metadata}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-400 hover:underline"
+          {/* Main content with scrollable area */}
+          <div className="p-6 max-h-[70vh] overflow-y-auto">
+            <div className="space-y-5">
+              {/* Players section */}
+              <div className="bg-gradient-to-r from-gray-800 to-gray-800/50 rounded-xl p-5 border border-gray-700/50">
+                <h3 className="font-medium text-gray-300 mb-4 flex items-center gap-2">
+                  <Users className="w-5 h-5 text-blue-400" />
+                  Players
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Creator card */}
+                  <div className="bg-gray-800/70 rounded-lg p-4 border border-gray-700/50 flex items-center gap-3">
+                    <div className="bg-blue-500/20 p-2 rounded-full">
+                      <User className="w-5 h-5 text-blue-400" />
+                    </div>
+                    <div>
+                      <div className="text-gray-400 text-xs">Creator</div>
+                      <div className="text-white font-medium truncate max-w-[180px]">
+                        {challenge.creator}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Challenger card (or empty slot) */}
+                  <div
+                    className={`rounded-lg p-4 border flex items-center gap-3 ${
+                      challenge.challenger !== PublicKey.default.toString()
+                        ? "bg-gray-800/70 border-gray-700/50"
+                        : "bg-gray-800/30 border-gray-700/30"
+                    }`}
                   >
-                    {challenge.metadata}
-                  </a>
-                </div>
-              </div>
-            )}
-
-            {/* Game details section */}
-            <div className="bg-gray-700/50 p-4 rounded-lg">
-              <h3 className="font-medium text-blue-400 mb-3 flex items-center gap-2">
-                <Crown className="w-5 h-5" />
-                Game Details
-              </h3>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <div className="text-gray-400 text-sm mb-1">Game Type</div>
-                  <div className="text-white">
-                    {typeof challenge.variant === "string"
-                      ? challenge.variant
-                      : challenge.variant?.name || "Standard"}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-gray-400 text-sm mb-1">Speed</div>
-                  <div className="text-white">
-                    {challenge.speed || "Unknown"}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-gray-400 text-sm mb-1">Time Control</div>
-                  <div className="text-white">
-                    {challenge.timeControl?.show ||
-                      `${challenge.timeControl?.limit || 0}+${
-                        challenge.timeControl?.increment || 0
-                      }`}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-gray-400 text-sm mb-1">Color</div>
-                  <div className="text-white">
-                    {challenge.color || "Random"}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-gray-400 text-sm mb-1">Rated</div>
-                  <div className="text-white">
-                    {challenge.rated ? "Yes" : "No"}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Challenger info if exists */}
-            {challenge.challenger && (
-              <div className="bg-gray-700/50 p-4 rounded-lg">
-                <div className="text-gray-400 text-sm mb-1">Challenger</div>
-                <div className="text-white flex items-center gap-2">
-                  <User className="w-4 h-4 text-yellow-400" />
-                  {challenge.challenger}
-                </div>
-              </div>
-            )}
-
-            {/* Action buttons */}
-            {challenge.isActive &&
-              challenge.challenger === PublicKey.default.toString() &&
-              !challenge.isComplete && (
-                <div className="mt-4">
-                  {connected ? (
-                    <button
-                      onClick={() => setShowConfirmAccept(true)}
-                      className="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg flex items-center justify-center gap-2"
-                      disabled={isLoading}
+                    <div
+                      className={`${
+                        challenge.challenger !== PublicKey.default.toString()
+                          ? "bg-yellow-500/20"
+                          : "bg-gray-700/30"
+                      } p-2 rounded-full`}
                     >
-                      <Sword className="w-5 h-5" />
-                      {isLoading ? "Processing..." : "Accept Challenge"}
-                    </button>
-                  ) : (
-                    <WalletMultiButton className="w-full" />
+                      <User
+                        className={`w-5 h-5 ${
+                          challenge.challenger !== PublicKey.default.toString()
+                            ? "text-yellow-400"
+                            : "text-gray-500"
+                        }`}
+                      />
+                    </div>
+                    <div>
+                      <div className="text-gray-400 text-xs">Challenger</div>
+                      <div
+                        className={`font-medium truncate max-w-[180px] ${
+                          challenge.challenger !== PublicKey.default.toString()
+                            ? "text-white"
+                            : "text-gray-500"
+                        }`}
+                      >
+                        {challenge.challenger !== PublicKey.default.toString()
+                          ? challenge.challenger
+                          : "Waiting for challenger..."}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Game details section */}
+              <div className="bg-gradient-to-r from-gray-800 to-gray-800/50 rounded-xl p-5 border border-gray-700/50">
+                <h3 className="font-medium text-gray-300 mb-4 flex items-center gap-2">
+                  <Crown className="w-5 h-5 text-yellow-400" />
+                  Game Details
+                </h3>
+
+                <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+                  <div className="space-y-1">
+                    <div className="text-gray-400 text-xs">Game Type</div>
+                    <div className="text-white font-medium">
+                      {typeof challenge.variant === "string"
+                        ? challenge.variant
+                        : challenge.variant?.name || "Standard"}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <div className="text-gray-400 text-xs">Speed</div>
+                    <div className="text-white font-medium">
+                      {challenge.speed || "Unknown"}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <div className="text-gray-400 text-xs">Time Control</div>
+                    <div className="text-white font-medium">
+                      {challenge.timeControl?.show ||
+                        `${challenge.timeControl?.limit || 0}+${
+                          challenge.timeControl?.increment || 0
+                        }`}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <div className="text-gray-400 text-xs">Color</div>
+                    <div className="text-white font-medium">
+                      {challenge.color || "Random"}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <div className="text-gray-400 text-xs">Rated</div>
+                    <div className="text-white font-medium">
+                      {challenge.rated ? "Yes" : "No"}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <div className="text-gray-400 text-xs">Wager</div>
+                    <div className="text-white font-medium flex items-center gap-2">
+                      <WalletIcon className="w-4 h-4 text-purple-400" />
+                      <span className="text-white font-bold">
+                        {challenge.wagerAmount}{" "}
+                        <span className="text-purple-400">SOL</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Lichess Info */}
+              <div className="bg-gradient-to-r from-gray-800 to-gray-800/50 rounded-xl p-5 border border-gray-700/50">
+                <h3 className="font-medium text-gray-300 mb-4 flex items-center gap-2">
+                  <ExternalLink className="w-5 h-5 text-blue-400" />
+                  Lichess Details
+                </h3>
+
+                <div className="space-y-4">
+                  <div className="bg-gray-800/70 rounded-lg p-4 border border-gray-700/50 flex items-center gap-3">
+                    <div className="bg-blue-500/20 p-2 rounded-full">
+                      <User className="w-5 h-5 text-blue-400" />
+                    </div>
+                    <div>
+                      <div className="text-gray-400 text-xs">
+                        Lichess Username
+                      </div>
+                      <div className="text-white font-medium">
+                        {challenge.lichessUsername}
+                      </div>
+                    </div>
+                  </div>
+
+                  {challenge.metadata && (
+                    <div className="bg-gray-800/70 rounded-lg p-4 border border-gray-700/50">
+                      <div className="text-gray-400 text-xs mb-1">
+                        Challenge Link
+                      </div>
+                      <a
+                        href={challenge.metadata}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-400 hover:text-blue-300 hover:underline flex items-center gap-2 truncate font-medium"
+                      >
+                        <Link className="w-4 h-4" />
+                        <span className="truncate">{challenge.metadata}</span>
+                      </a>
+                    </div>
                   )}
                 </div>
-              )}
-            {/* Challenge completion buttons */}
-            {canComplete && challenge.isComplete !== true && (
-              <div className="mt-4 space-y-3">
-                <h3 className="font-medium text-yellow-400">
+              </div>
+            </div>
+          </div>
+
+          {/* Action footer with gradient */}
+          <div className="bg-gradient-to-r from-gray-800 to-gray-900 p-6 border-t border-gray-700">
+            {/* Accept Challenge Button - only show when there's no challenger and challenge is active */}
+            {showAcceptButton && (
+              <div>
+                {connected ? (
+                  <button
+                    onClick={() => setShowConfirmAccept(true)}
+                    className="w-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white py-3 px-4 rounded-lg flex items-center justify-center gap-2 font-medium transition-all shadow-lg shadow-green-500/10 hover:shadow-green-500/20"
+                    disabled={isLoading}
+                  >
+                    <Sword className="w-5 h-5" />
+                    {isLoading ? "Processing..." : "Accept Challenge"}
+                  </button>
+                ) : (
+                  <WalletMultiButton className="w-full" />
+                )}
+              </div>
+            )}
+
+            {/* Challenge completion buttons - only show when there is a challenger and the challenge is not complete */}
+            {showCompleteButtons && (
+              <div className="space-y-3">
+                <h3 className="font-medium text-yellow-400 mb-2">
                   Complete Challenge
                 </h3>
-                <button
-                  onClick={() => handleComplete(challenge.creator)}
-                  className="w-full bg-yellow-600 hover:bg-yellow-700 text-white py-3 px-4 rounded-lg flex items-center justify-center gap-2"
-                  disabled={isLoading}
-                >
-                  <Trophy className="w-5 h-5" />
-                  {isLoading ? "Completing..." : "Creator Wins"}
-                </button>
-                <button
-                  onClick={() => handleComplete(challenge.challenger || "")}
-                  className="w-full bg-yellow-600 hover:bg-yellow-700 text-white py-3 px-4 rounded-lg flex items-center justify-center gap-2"
-                  disabled={isLoading}
-                >
-                  <Trophy className="w-5 h-5" />
-                  {isLoading ? "Completing..." : "Challenger Wins"}
-                </button>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => handleComplete(challenge.creator)}
+                    className="bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-700 hover:to-yellow-600 text-white py-3 px-4 rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-yellow-500/10 hover:shadow-yellow-500/20 transition-all font-medium"
+                    disabled={isLoading}
+                  >
+                    <Trophy className="w-5 h-5" />
+                    {isLoading ? "Completing..." : "Creator Wins"}
+                  </button>
+                  <button
+                    onClick={() => handleComplete(challenge.challenger || "")}
+                    className="bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-700 hover:to-yellow-600 text-white py-3 px-4 rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-yellow-500/10 hover:shadow-yellow-500/20 transition-all font-medium"
+                    disabled={isLoading}
+                  >
+                    <Trophy className="w-5 h-5" />
+                    {isLoading ? "Completing..." : "Challenger Wins"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* No buttons if the challenge is completed */}
+            {challenge.isComplete && (
+              <div className="text-center text-gray-400 py-2">
+                This challenge has been completed
+              </div>
+            )}
+
+            {/* No buttons if the challenge is inactive */}
+            {!challenge.isActive && !challenge.isComplete && (
+              <div className="text-center text-gray-400 py-2">
+                This challenge is currently inactive
               </div>
             )}
           </div>
         </DialogContent>
       </Dialog>
 
+      {/* Wallet Prompt Dialog */}
       <AlertDialog open={showWalletPrompt} onOpenChange={setShowWalletPrompt}>
-        <AlertDialogContent className="bg-gray-800 text-white border border-gray-700">
+        <AlertDialogContent className="bg-gray-900 text-white border border-gray-700 p-6">
           <AlertDialogHeader>
-            <AlertDialogTitle>Connect Wallet</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-xl font-bold">
+              Connect Wallet
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
               Please connect your wallet to accept this challenge.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="bg-gray-700 hover:bg-gray-600">
+          <AlertDialogFooter className="mt-6 flex gap-3">
+            <AlertDialogCancel className="bg-gray-700 hover:bg-gray-600 text-white">
               Cancel
             </AlertDialogCancel>
             <WalletMultiButton />
@@ -751,21 +857,29 @@ const ChallengeDetailsDialog: React.FC<{
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Confirm Accept Dialog */}
       <AlertDialog open={showConfirmAccept} onOpenChange={setShowConfirmAccept}>
-        <AlertDialogContent className="bg-gray-800 text-white border border-gray-700">
+        <AlertDialogContent className="bg-gray-900 text-white border border-gray-700 p-6">
           <AlertDialogHeader>
-            <AlertDialogTitle>Accept Challenge</AlertDialogTitle>
+            <AlertDialogTitle className="text-xl font-bold flex items-center gap-2">
+              <Sword className="w-5 h-5 text-green-400" />
+              Accept Challenge
+            </AlertDialogTitle>
             <AlertDialogDescription className="text-gray-400">
               Are you sure you want to accept this challenge? This will require
-              a wager of {challenge.wagerAmount} SOL.
+              a wager of{" "}
+              <span className="text-purple-400 font-bold">
+                {challenge.wagerAmount} SOL
+              </span>
+              .
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
+          <AlertDialogFooter className="mt-6 flex gap-3">
             <AlertDialogCancel className="bg-gray-700 hover:bg-gray-600 text-white">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              className="bg-green-600 hover:bg-green-700 text-white"
+              className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white font-medium"
               onClick={() => handleAccept(challenge.id)}
               disabled={isLoading}
             >
