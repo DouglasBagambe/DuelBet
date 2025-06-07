@@ -617,157 +617,156 @@ export default function Wager() {
     const [amount, setAmount] = useState("");
     const [searchActive, setSearchActive] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
-    const [quickDuels, setQuickDuels] = useState<QuickDuel[]>([]);
-    const [loading, setLoading] = useState(true);
 
     interface QuickDuel {
       id: number;
       sport: string;
       description: string;
-      optionA: string; // Updated to camelCase
-      optionB: string; // Updated to camelCase
-      eventId: string; // Updated to camelCase
+      option_a: string;
+      option_b: string;
+      eventId: string;
     }
 
-    // Updated sports categories for filtering
+    // Sports categories for filtering
     const sports = [
       { id: "all", name: "All" },
       { id: "soccer", name: "Soccer" },
-      { id: "basketball", name: "Basketball" },
-      { id: "tennis", name: "Tennis" },
       { id: "ufc", name: "UFC" },
       { id: "boxing", name: "Boxing" },
-      { id: "motorsport", name: "Motorsport" },
-      { id: "cricket", name: "Cricket" },
-      { id: "rugby", name: "Rugby" },
+      { id: "nba", name: "NBA" },
     ];
 
-    // Fetch all leagues and events from TheSportsDB
-    useEffect(() => {
-      const fetchAllEvents = async () => {
-        setLoading(true);
-        const API_KEY = "3"; // Free test API key
-        const fetchedDuels: QuickDuel[] = [];
-        let duelId = 1;
-
-        try {
-          const leaguesUrl = `https://www.thesportsdb.com/api/v1/json/${API_KEY}/all_leagues.php`;
-          const leaguesResponse = await fetch(leaguesUrl);
-          if (!leaguesResponse.ok) {
-            throw new Error(
-              `Failed to fetch leagues: ${leaguesResponse.status}`
-            );
-          }
-          const leaguesData: { leagues: any[] } = await leaguesResponse.json();
-          const leagues = leaguesData.leagues || [];
-
-          for (const league of leagues) {
-            const sport = league.strSport.toLowerCase();
-            if (
-              ![
-                "soccer",
-                "basketball",
-                "tennis",
-                "mma",
-                "motorsport",
-                "cricket",
-                "rugby",
-              ].includes(sport)
-            ) {
-              continue;
-            }
-
-            const leagueId = league.idLeague;
-            const eventsUrl = `https://www.thesportsdb.com/api/v1/json/${API_KEY}/eventsnextleague.php?id=${leagueId}`;
-            const eventsResponse = await fetch(eventsUrl);
-            if (!eventsResponse.ok) {
-              console.error(
-                `Failed to fetch events for league ${leagueId}: ${eventsResponse.status}`
-              );
-              continue;
-            }
-            const eventsData = await eventsResponse.json();
-            const events = eventsData.events || [];
-
-            events.forEach((event: any) => {
-              let sportType = sport;
-              if (sport === "mma") {
-                sportType = event.strLeague === "UFC" ? "ufc" : "boxing";
-              }
-              // Only add duel if both teams are present
-              if (event.strHomeTeam && event.strAwayTeam) {
-                console.log("Fetched event ID:", event.idEvent);
-                fetchedDuels.push({
-                  id: duelId++,
-                  sport: sportType,
-                  description: event.strEvent,
-                  optionA: event.strHomeTeam,
-                  optionB: event.strAwayTeam,
-                  eventId: event.idEvent,
-                });
-              }
-            });
-
-            await new Promise((resolve) => setTimeout(resolve, 500));
-          }
-
-          const today = new Date();
-          const dateRange = 7;
-          for (let i = 0; i < dateRange; i++) {
-            const date = new Date(today);
-            date.setDate(today.getDate() + i);
-            const dateStr = date.toISOString().split("T")[0];
-
-            const tennisUrl = `https://www.thesportsdb.com/api/v1/json/${API_KEY}/eventsday.php?d=${dateStr}&s=Tennis`;
-            const tennisResponse = await fetch(tennisUrl);
-            if (tennisResponse.ok) {
-              const tennisResponseData = await tennisResponse.json();
-              const tennisEvents = tennisResponseData.events || [];
-              tennisEvents.forEach((event: any) => {
-                console.log("Fetched tennis event ID:", event.idEvent); // Log event ID
-                fetchedDuels.push({
-                  id: duelId++,
-                  sport: "tennis",
-                  description: event.strEvent,
-                  optionA: event.strHomeTeam || "N/A",
-                  optionB: event.strAwayTeam || "N/A",
-                  eventId: event.idEvent,
-                });
-              });
-            }
-
-            const boxingUrl = `https://www.thesportsdb.com/api/v1/json/${API_KEY}/eventsday.php?d=${dateStr}&s=Fighting`;
-            const boxingResponse = await fetch(boxingUrl);
-            if (boxingResponse.ok) {
-              const boxingResponseData = await boxingResponse.json();
-              const boxingEvents = boxingResponseData.events || [];
-              boxingEvents.forEach((event: any) => {
-                if (event.strLeague === "UFC") return;
-                console.log("Fetched boxing event ID:", event.idEvent); // Log event ID
-                fetchedDuels.push({
-                  id: duelId++,
-                  sport: "boxing",
-                  description: event.strEvent,
-                  optionA: event.strHomeTeam || "N/A",
-                  optionB: event.strAwayTeam || "N/A",
-                  eventId: event.idEvent,
-                });
-              });
-            }
-
-            await new Promise((resolve) => setTimeout(resolve, 500));
-          }
-
-          setQuickDuels(fetchedDuels);
-        } catch (err) {
-          console.error("Error fetching events:", err);
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      fetchAllEvents();
-    }, []);
+    // Quick duel events data
+    const quickDuels = [
+      {
+        id: 1,
+        sport: "soccer",
+        description: "Liverpool vs Man United",
+        option_a: "Liverpool",
+        option_b: "Man United",
+        eventId: "soccer_123",
+      },
+      {
+        id: 2,
+        sport: "soccer",
+        description: "Real Madrid vs Barcelona",
+        option_a: "Real Madrid",
+        option_b: "Barcelona",
+        eventId: "soccer_124",
+      },
+      {
+        id: 3,
+        sport: "ufc",
+        description: "Jon Jones vs Stipe Miocic",
+        option_a: "Jon Jones",
+        option_b: "Stipe Miocic",
+        eventId: "ufc_301",
+      },
+      {
+        id: 4,
+        sport: "ufc",
+        description: "Israel Adesanya vs Dricus Du Plessis",
+        option_a: "Adesanya",
+        option_b: "Du Plessis",
+        eventId: "ufc_302",
+      },
+      {
+        id: 5,
+        sport: "boxing",
+        description: "Tyson Fury vs Oleksandr Usyk",
+        option_a: "Tyson Fury",
+        option_b: "Oleksandr Usyk",
+        eventId: "boxing_201",
+      },
+      {
+        id: 6,
+        sport: "boxing",
+        description: "Canelo Alvarez vs David Benavidez",
+        option_a: "Canelo",
+        option_b: "Benavidez",
+        eventId: "boxing_202",
+      },
+      {
+        id: 7,
+        sport: "nba",
+        description: "Lakers vs Celtics",
+        option_a: "Lakers",
+        option_b: "Celtics",
+        eventId: "nba_401",
+      },
+      {
+        id: 8,
+        sport: "nba",
+        description: "Warriors vs Nuggets",
+        option_a: "Warriors",
+        option_b: "Nuggets",
+        eventId: "nba_402",
+      },
+      {
+        id: 9,
+        sport: "soccer",
+        description: "Arsenal vs Chelsea",
+        option_a: "Arsenal",
+        option_b: "Chelsea",
+        eventId: "soccer_125",
+      },
+      {
+        id: 10,
+        sport: "soccer",
+        description: "Bayern vs Dortmund",
+        option_a: "Bayern",
+        option_b: "Dortmund",
+        eventId: "soccer_126",
+      },
+      {
+        id: 11,
+        sport: "ufc",
+        description: "Conor McGregor vs Michael Chandler",
+        option_a: "McGregor",
+        option_b: "Chandler",
+        eventId: "ufc_303",
+      },
+      {
+        id: 12,
+        sport: "ufc",
+        description: "Alex Pereira vs Jamahal Hill",
+        option_a: "Pereira",
+        option_b: "Hill",
+        eventId: "ufc_304",
+      },
+      {
+        id: 13,
+        sport: "boxing",
+        description: "Anthony Joshua vs Francis Ngannou",
+        option_a: "Joshua",
+        option_b: "Ngannou",
+        eventId: "boxing_203",
+      },
+      {
+        id: 14,
+        sport: "boxing",
+        description: "Terence Crawford vs Errol Spence",
+        option_a: "Crawford",
+        option_b: "Spence",
+        eventId: "boxing_204",
+      },
+      {
+        id: 15,
+        sport: "nba",
+        description: "Bucks vs 76ers",
+        option_a: "Bucks",
+        option_b: "76ers",
+        eventId: "nba_403",
+      },
+      {
+        id: 16,
+        sport: "nba",
+        description: "Suns vs Mavericks",
+        option_a: "Suns",
+        option_b: "Mavericks",
+        eventId: "nba_404",
+      },
+    ];
 
     // Filter duels based on selected sport and search query
     const filteredDuels = quickDuels
@@ -778,8 +777,8 @@ export default function Wager() {
           : duel.description
               .toLowerCase()
               .includes(searchQuery.toLowerCase()) ||
-            duel.optionA.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            duel.optionB.toLowerCase().includes(searchQuery.toLowerCase())
+            duel.option_a.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            duel.option_b.toLowerCase().includes(searchQuery.toLowerCase())
       );
 
     const getProvider = () => {
@@ -830,10 +829,10 @@ export default function Wager() {
           .initializeWager(
             lamports,
             selectedQuickDuel.description,
-            selectedQuickDuel.optionA, // Updated to camelCase
-            selectedQuickDuel.optionB, // Updated to camelCase
+            selectedQuickDuel.option_a,
+            selectedQuickDuel.option_b,
             userPick === "A",
-            selectedQuickDuel.eventId // Updated to camelCase
+            selectedQuickDuel.eventId
           )
           .accounts({
             wager: wagerAccount.publicKey,
@@ -930,7 +929,7 @@ export default function Wager() {
         </div>
 
         {/* Sport filters */}
-        <div className="flex gap-1 mb-2 flex-wrap">
+        <div className="flex gap-1 mb-2">
           {sports.map((sport) => (
             <button
               key={sport.id}
@@ -949,13 +948,9 @@ export default function Wager() {
         {/* Quick duel list */}
         <div
           className="flex-1 overflow-y-auto pr-1"
-          style={{ maxHeight: "43vh" }}
+          style={{ maxHeight: "39vh" }}
         >
-          {loading ? (
-            <div className="flex flex-col items-center justify-center h-full">
-              <p className="text-gray-400 text-sm">Loading events...</p>
-            </div>
-          ) : filteredDuels.length > 0 ? (
+          {filteredDuels.length > 0 ? (
             <div className="space-y-1">
               {filteredDuels.map((duel) => (
                 <div
@@ -966,13 +961,10 @@ export default function Wager() {
                     setIsDialogOpen(true);
                   }}
                 >
-                  <div className="flex items-center gap-2 w-full">
-                    <GamepadIcon className="w-4 h-4 text-blue-400 flex-shrink-0" />
-                    <div className="flex-1 overflow-hidden">
-                      <p
-                        className="text-white font-medium text-sm truncate"
-                        style={{ maxWidth: "220px" }} // Fixed width for truncation
-                      >
+                  <div className="flex items-center gap-2">
+                    <GamepadIcon className="w-4 h-4 text-blue-400" />
+                    <div className="overflow-hidden">
+                      <p className="text-white font-medium text-sm truncate">
                         {duel.description}
                       </p>
                       <p className="text-gray-400 text-xs">
@@ -1027,7 +1019,7 @@ export default function Wager() {
                       : "bg-gray-700 hover:bg-gray-650 text-white"
                   }`}
                 >
-                  {selectedQuickDuel?.optionA}
+                  {selectedQuickDuel?.option_a}
                 </button>
                 <button
                   onClick={() => setUserPick("B")}
@@ -1037,7 +1029,7 @@ export default function Wager() {
                       : "bg-gray-700 hover:bg-gray-650 text-white"
                   }`}
                 >
-                  {selectedQuickDuel?.optionB}
+                  {selectedQuickDuel?.option_b}
                 </button>
               </div>
             </div>
