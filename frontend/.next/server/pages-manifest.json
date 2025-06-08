@@ -2,6 +2,9 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
+  "/lichess": "pages/lichess.js",
+  "/lichess/callback": "pages/lichess/callback.js",
   "/": "pages/index.js",
-  "/lichess": "pages/lichess.js"
+  "/api/lichess/account": "pages/api/lichess/account.js",
+  "/api/lichess/user/[username]": "pages/api/lichess/user/[username].js"
 }

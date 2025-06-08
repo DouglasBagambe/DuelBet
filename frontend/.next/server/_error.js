@@ -41,7 +41,7 @@ eval("__webpack_require__.a(module, async (__webpack_handle_async_dependencies__
 /***/ ((module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
-eval("__webpack_require__.a(module, async (__webpack_handle_async_dependencies__, __webpack_async_result__) => { try {\n__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   \"default\": () => (__WEBPACK_DEFAULT_EXPORT__)\n/* harmony export */ });\n/* harmony import */ var react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react/jsx-dev-runtime */ \"react/jsx-dev-runtime\");\n/* harmony import */ var react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ \"react\");\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);\n/* harmony import */ var _solana_wallet_adapter_react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @solana/wallet-adapter-react */ \"@solana/wallet-adapter-react\");\n/* harmony import */ var _solana_wallet_adapter_react_ui__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @solana/wallet-adapter-react-ui */ \"@solana/wallet-adapter-react-ui\");\n/* harmony import */ var _solana_wallet_adapter_wallets__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @solana/wallet-adapter-wallets */ \"@solana/wallet-adapter-wallets\");\n/* harmony import */ var _solana_web3_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @solana/web3.js */ \"@solana/web3.js\");\n/* harmony import */ var _solana_web3_js__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_solana_web3_js__WEBPACK_IMPORTED_MODULE_5__);\n/* harmony import */ var react_hot_toast__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react-hot-toast */ \"react-hot-toast\");\n/* harmony import */ var _components_common_Layout__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @/components/common/Layout */ \"./components/common/Layout.tsx\");\n/* harmony import */ var _styles_global_css__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @/styles/global.css */ \"./styles/global.css\");\n/* harmony import */ var _styles_global_css__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(_styles_global_css__WEBPACK_IMPORTED_MODULE_8__);\nvar __webpack_async_dependencies__ = __webpack_handle_async_dependencies__([_solana_wallet_adapter_react__WEBPACK_IMPORTED_MODULE_2__, _solana_wallet_adapter_react_ui__WEBPACK_IMPORTED_MODULE_3__, _solana_wallet_adapter_wallets__WEBPACK_IMPORTED_MODULE_4__, react_hot_toast__WEBPACK_IMPORTED_MODULE_6__, _components_common_Layout__WEBPACK_IMPORTED_MODULE_7__]);\n([_solana_wallet_adapter_react__WEBPACK_IMPORTED_MODULE_2__, _solana_wallet_adapter_react_ui__WEBPACK_IMPORTED_MODULE_3__, _solana_wallet_adapter_wallets__WEBPACK_IMPORTED_MODULE_4__, react_hot_toast__WEBPACK_IMPORTED_MODULE_6__, _components_common_Layout__WEBPACK_IMPORTED_MODULE_7__] = __webpack_async_dependencies__.then ? (await __webpack_async_dependencies__)() : __webpack_async_dependencies__);\n// frontend/pages/_app.tsx\n\n\n\n\n\n\n\n\n\n\n__webpack_require__(/*! @solana/wallet-adapter-react-ui/styles.css */ \"../node_modules/@solana/wallet-adapter-react-ui/styles.css\");\n// Default to 'devnet' for development, you can change this based on environment\nconst network = process.env.NEXT_PUBLIC_SOLANA_NETWORK || \"devnet\";\nfunction MyApp({ Component, pageProps }) {\n    // Initialize wallets that you want to use\n    const wallets = (0,react__WEBPACK_IMPORTED_MODULE_1__.useMemo)({\n        \"MyApp.useMemo[wallets]\": ()=>[\n                new _solana_wallet_adapter_wallets__WEBPACK_IMPORTED_MODULE_4__.PhantomWalletAdapter(),\n                new _solana_wallet_adapter_wallets__WEBPACK_IMPORTED_MODULE_4__.SolflareWalletAdapter(),\n                new _solana_wallet_adapter_wallets__WEBPACK_IMPORTED_MODULE_4__.TorusWalletAdapter()\n            ]\n    }[\"MyApp.useMemo[wallets]\"], [\n        network\n    ]);\n    // Initialize connection endpoint\n    const endpoint = (0,react__WEBPACK_IMPORTED_MODULE_1__.useMemo)({\n        \"MyApp.useMemo[endpoint]\": ()=>(0,_solana_web3_js__WEBPACK_IMPORTED_MODULE_5__.clusterApiUrl)(network)\n    }[\"MyApp.useMemo[endpoint]\"], [\n        network\n    ]);\n    return /*#__PURE__*/ (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxDEV)(_solana_wallet_adapter_react__WEBPACK_IMPORTED_MODULE_2__.ConnectionProvider, {\n        endpoint: endpoint,\n        children: /*#__PURE__*/ (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxDEV)(_solana_wallet_adapter_react__WEBPACK_IMPORTED_MODULE_2__.WalletProvider, {\n            wallets: wallets,\n            autoConnect: true,\n            children: /*#__PURE__*/ (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxDEV)(_solana_wallet_adapter_react_ui__WEBPACK_IMPORTED_MODULE_3__.WalletModalProvider, {\n                children: /*#__PURE__*/ (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxDEV)(_components_common_Layout__WEBPACK_IMPORTED_MODULE_7__[\"default\"], {\n                    children: [\n                        /*#__PURE__*/ (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxDEV)(Component, {\n                            ...pageProps\n                        }, void 0, false, {\n                            fileName: \"/home/db/Projects/DuelBet/frontend/pages/_app.tsx\",\n                            lineNumber: 43,\n                            columnNumber: 13\n                        }, this),\n                        /*#__PURE__*/ (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxDEV)(react_hot_toast__WEBPACK_IMPORTED_MODULE_6__.Toaster, {\n                            position: \"bottom-right\",\n                            toastOptions: {\n                                style: {\n                                    background: \"#333\",\n                                    color: \"#fff\"\n                                },\n                                success: {\n                                    duration: 3000\n                                },\n                                error: {\n                                    duration: 4000\n                                }\n                            }\n                        }, void 0, false, {\n                            fileName: \"/home/db/Projects/DuelBet/frontend/pages/_app.tsx\",\n                            lineNumber: 44,\n                            columnNumber: 13\n                        }, this)\n                    ]\n                }, void 0, true, {\n                    fileName: \"/home/db/Projects/DuelBet/frontend/pages/_app.tsx\",\n                    lineNumber: 42,\n                    columnNumber: 11\n                }, this)\n            }, void 0, false, {\n                fileName: \"/home/db/Projects/DuelBet/frontend/pages/_app.tsx\",\n                lineNumber: 41,\n                columnNumber: 9\n            }, this)\n        }, void 0, false, {\n            fileName: \"/home/db/Projects/DuelBet/frontend/pages/_app.tsx\",\n            lineNumber: 40,\n            columnNumber: 7\n        }, this)\n    }, void 0, false, {\n        fileName: \"/home/db/Projects/DuelBet/frontend/pages/_app.tsx\",\n        lineNumber: 39,\n        columnNumber: 5\n    }, this);\n}\n/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (MyApp);\n\n__webpack_async_result__();\n} catch(e) { __webpack_async_result__(e); } });//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9wYWdlcy9fYXBwLnRzeCIsIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7Ozs7OztBQUFBLDBCQUEwQjs7QUFFTTtBQUM4QjtBQUNRO0FBSzlCO0FBQ1E7QUFDa0I7QUFDeEI7QUFDTTtBQUNuQjtBQUM3QlUsbUJBQU9BLENBQUMsOEdBQTRDO0FBRXBELGdGQUFnRjtBQUNoRixNQUFNQyxVQUFVQyxRQUFRQyxHQUFHLENBQUNDLDBCQUEwQixJQUFJO0FBRTFELFNBQVNDLE1BQU0sRUFBRUMsU0FBUyxFQUFFQyxTQUFTLEVBQVk7SUFDL0MsMENBQTBDO0lBQzFDLE1BQU1DLFVBQVVsQiw4Q0FBT0E7a0NBQ3JCLElBQU07Z0JBQ0osSUFBSUcsZ0ZBQW9CQTtnQkFDeEIsSUFBSUMsaUZBQXFCQTtnQkFDekIsSUFBSUMsOEVBQWtCQTthQUN2QjtpQ0FDRDtRQUFDTTtLQUFRO0lBR1gsaUNBQWlDO0lBQ2pDLE1BQU1RLFdBQVduQiw4Q0FBT0E7bUNBQ3RCLElBQU1NLDhEQUFhQSxDQUFDSztrQ0FDcEI7UUFBQ0E7S0FBUTtJQUdYLHFCQUNFLDhEQUFDSiw0RUFBa0JBO1FBQUNZLFVBQVVBO2tCQUM1Qiw0RUFBQ2xCLHdFQUFjQTtZQUFDaUIsU0FBU0E7WUFBU0UsV0FBVztzQkFDM0MsNEVBQUNsQixnRkFBbUJBOzBCQUNsQiw0RUFBQ08saUVBQU1BOztzQ0FDTCw4REFBQ087NEJBQVcsR0FBR0MsU0FBUzs7Ozs7O3NDQUN4Qiw4REFBQ1Qsb0RBQU9BOzRCQUNOYSxVQUFTOzRCQUNUQyxjQUFjO2dDQUNaQyxPQUFPO29DQUNMQyxZQUFZO29DQUNaQyxPQUFPO2dDQUNUO2dDQUNBQyxTQUFTO29DQUNQQyxVQUFVO2dDQUNaO2dDQUNBQyxPQUFPO29DQUNMRCxVQUFVO2dDQUNaOzRCQUNGOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7QUFPZDtBQUVBLGlFQUFlWixLQUFLQSxFQUFDIiwic291cmNlcyI6WyIvaG9tZS9kYi9Qcm9qZWN0cy9EdWVsQmV0L2Zyb250ZW5kL3BhZ2VzL19hcHAudHN4Il0sInNvdXJjZXNDb250ZW50IjpbIi8vIGZyb250ZW5kL3BhZ2VzL19hcHAudHN4XG5pbXBvcnQgeyBBcHBQcm9wcyB9IGZyb20gXCJuZXh0L2FwcFwiO1xuaW1wb3J0IHsgdXNlTWVtbyB9IGZyb20gXCJyZWFjdFwiO1xuaW1wb3J0IHsgV2FsbGV0UHJvdmlkZXIgfSBmcm9tIFwiQHNvbGFuYS93YWxsZXQtYWRhcHRlci1yZWFjdFwiO1xuaW1wb3J0IHsgV2FsbGV0TW9kYWxQcm92aWRlciB9IGZyb20gXCJAc29sYW5hL3dhbGxldC1hZGFwdGVyLXJlYWN0LXVpXCI7XG5pbXBvcnQge1xuICBQaGFudG9tV2FsbGV0QWRhcHRlcixcbiAgU29sZmxhcmVXYWxsZXRBZGFwdGVyLFxuICBUb3J1c1dhbGxldEFkYXB0ZXIsXG59IGZyb20gXCJAc29sYW5hL3dhbGxldC1hZGFwdGVyLXdhbGxldHNcIjtcbmltcG9ydCB7IGNsdXN0ZXJBcGlVcmwgfSBmcm9tIFwiQHNvbGFuYS93ZWIzLmpzXCI7XG5pbXBvcnQgeyBDb25uZWN0aW9uUHJvdmlkZXIgfSBmcm9tIFwiQHNvbGFuYS93YWxsZXQtYWRhcHRlci1yZWFjdFwiO1xuaW1wb3J0IHsgVG9hc3RlciB9IGZyb20gXCJyZWFjdC1ob3QtdG9hc3RcIjtcbmltcG9ydCBMYXlvdXQgZnJvbSBcIkAvY29tcG9uZW50cy9jb21tb24vTGF5b3V0XCI7XG5pbXBvcnQgXCJAL3N0eWxlcy9nbG9iYWwuY3NzXCI7XG5yZXF1aXJlKFwiQHNvbGFuYS93YWxsZXQtYWRhcHRlci1yZWFjdC11aS9zdHlsZXMuY3NzXCIpO1xuXG4vLyBEZWZhdWx0IHRvICdkZXZuZXQnIGZvciBkZXZlbG9wbWVudCwgeW91IGNhbiBjaGFuZ2UgdGhpcyBiYXNlZCBvbiBlbnZpcm9ubWVudFxuY29uc3QgbmV0d29yayA9IHByb2Nlc3MuZW52Lk5FWFRfUFVCTElDX1NPTEFOQV9ORVRXT1JLIHx8IFwiZGV2bmV0XCI7XG5cbmZ1bmN0aW9uIE15QXBwKHsgQ29tcG9uZW50LCBwYWdlUHJvcHMgfTogQXBwUHJvcHMpIHtcbiAgLy8gSW5pdGlhbGl6ZSB3YWxsZXRzIHRoYXQgeW91IHdhbnQgdG8gdXNlXG4gIGNvbnN0IHdhbGxldHMgPSB1c2VNZW1vKFxuICAgICgpID0+IFtcbiAgICAgIG5ldyBQaGFudG9tV2FsbGV0QWRhcHRlcigpLFxuICAgICAgbmV3IFNvbGZsYXJlV2FsbGV0QWRhcHRlcigpLFxuICAgICAgbmV3IFRvcnVzV2FsbGV0QWRhcHRlcigpLFxuICAgIF0sXG4gICAgW25ldHdvcmtdXG4gICk7XG5cbiAgLy8gSW5pdGlhbGl6ZSBjb25uZWN0aW9uIGVuZHBvaW50XG4gIGNvbnN0IGVuZHBvaW50ID0gdXNlTWVtbyhcbiAgICAoKSA9PiBjbHVzdGVyQXBpVXJsKG5ldHdvcmsgYXMgXCJkZXZuZXRcIiB8IFwidGVzdG5ldFwiIHwgXCJtYWlubmV0LWJldGFcIiksXG4gICAgW25ldHdvcmtdXG4gICk7XG5cbiAgcmV0dXJuIChcbiAgICA8Q29ubmVjdGlvblByb3ZpZGVyIGVuZHBvaW50PXtlbmRwb2ludH0+XG4gICAgICA8V2FsbGV0UHJvdmlkZXIgd2FsbGV0cz17d2FsbGV0c30gYXV0b0Nvbm5lY3Q+XG4gICAgICAgIDxXYWxsZXRNb2RhbFByb3ZpZGVyPlxuICAgICAgICAgIDxMYXlvdXQ+XG4gICAgICAgICAgICA8Q29tcG9uZW50IHsuLi5wYWdlUHJvcHN9IC8+XG4gICAgICAgICAgICA8VG9hc3RlclxuICAgICAgICAgICAgICBwb3NpdGlvbj1cImJvdHRvbS1yaWdodFwiXG4gICAgICAgICAgICAgIHRvYXN0T3B0aW9ucz17e1xuICAgICAgICAgICAgICAgIHN0eWxlOiB7XG4gICAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kOiBcIiMzMzNcIixcbiAgICAgICAgICAgICAgICAgIGNvbG9yOiBcIiNmZmZcIixcbiAgICAgICAgICAgICAgICB9LFxuICAgICAgICAgICAgICAgIHN1Y2Nlc3M6IHtcbiAgICAgICAgICAgICAgICAgIGR1cmF0aW9uOiAzMDAwLFxuICAgICAgICAgICAgICAgIH0sXG4gICAgICAgICAgICAgICAgZXJyb3I6IHtcbiAgICAgICAgICAgICAgICAgIGR1cmF0aW9uOiA0MDAwLFxuICAgICAgICAgICAgICAgIH0sXG4gICAgICAgICAgICAgIH19XG4gICAgICAgICAgICAvPlxuICAgICAgICAgIDwvTGF5b3V0PlxuICAgICAgICA8L1dhbGxldE1vZGFsUHJvdmlkZXI+XG4gICAgICA8L1dhbGxldFByb3ZpZGVyPlxuICAgIDwvQ29ubmVjdGlvblByb3ZpZGVyPlxuICApO1xufVxuXG5leHBvcnQgZGVmYXVsdCBNeUFwcDtcbiJdLCJuYW1lcyI6WyJ1c2VNZW1vIiwiV2FsbGV0UHJvdmlkZXIiLCJXYWxsZXRNb2RhbFByb3ZpZGVyIiwiUGhhbnRvbVdhbGxldEFkYXB0ZXIiLCJTb2xmbGFyZVdhbGxldEFkYXB0ZXIiLCJUb3J1c1dhbGxldEFkYXB0ZXIiLCJjbHVzdGVyQXBpVXJsIiwiQ29ubmVjdGlvblByb3ZpZGVyIiwiVG9hc3RlciIsIkxheW91dCIsInJlcXVpcmUiLCJuZXR3b3JrIiwicHJvY2VzcyIsImVudiIsIk5FWFRfUFVCTElDX1NPTEFOQV9ORVRXT1JLIiwiTXlBcHAiLCJDb21wb25lbnQiLCJwYWdlUHJvcHMiLCJ3YWxsZXRzIiwiZW5kcG9pbnQiLCJhdXRvQ29ubmVjdCIsInBvc2l0aW9uIiwidG9hc3RPcHRpb25zIiwic3R5bGUiLCJiYWNrZ3JvdW5kIiwiY29sb3IiLCJzdWNjZXNzIiwiZHVyYXRpb24iLCJlcnJvciJdLCJpZ25vcmVMaXN0IjpbXSwic291cmNlUm9vdCI6IiJ9\n//# sourceURL=webpack-internal:///./pages/_app.tsx\n");
+eval("__webpack_require__.a(module, async (__webpack_handle_async_dependencies__, __webpack_async_result__) => { try {\n__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   \"default\": () => (__WEBPACK_DEFAULT_EXPORT__)\n/* harmony export */ });\n/* harmony import */ var react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react/jsx-dev-runtime */ \"react/jsx-dev-runtime\");\n/* harmony import */ var react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var _solana_wallet_adapter_base__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @solana/wallet-adapter-base */ \"@solana/wallet-adapter-base\");\n/* harmony import */ var _solana_wallet_adapter_react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @solana/wallet-adapter-react */ \"@solana/wallet-adapter-react\");\n/* harmony import */ var _solana_wallet_adapter_react_ui__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @solana/wallet-adapter-react-ui */ \"@solana/wallet-adapter-react-ui\");\n/* harmony import */ var _solana_wallet_adapter_wallets__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @solana/wallet-adapter-wallets */ \"@solana/wallet-adapter-wallets\");\n/* harmony import */ var _solana_web3_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @solana/web3.js */ \"@solana/web3.js\");\n/* harmony import */ var _solana_web3_js__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_solana_web3_js__WEBPACK_IMPORTED_MODULE_5__);\n/* harmony import */ var sonner__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! sonner */ \"sonner\");\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! react */ \"react\");\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_7__);\n/* harmony import */ var _components_common_Layout__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @/components/common/Layout */ \"./components/common/Layout.tsx\");\n/* harmony import */ var _styles_global_css__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @/styles/global.css */ \"./styles/global.css\");\n/* harmony import */ var _styles_global_css__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(_styles_global_css__WEBPACK_IMPORTED_MODULE_9__);\nvar __webpack_async_dependencies__ = __webpack_handle_async_dependencies__([_solana_wallet_adapter_base__WEBPACK_IMPORTED_MODULE_1__, _solana_wallet_adapter_react__WEBPACK_IMPORTED_MODULE_2__, _solana_wallet_adapter_react_ui__WEBPACK_IMPORTED_MODULE_3__, _solana_wallet_adapter_wallets__WEBPACK_IMPORTED_MODULE_4__, sonner__WEBPACK_IMPORTED_MODULE_6__, _components_common_Layout__WEBPACK_IMPORTED_MODULE_8__]);\n([_solana_wallet_adapter_base__WEBPACK_IMPORTED_MODULE_1__, _solana_wallet_adapter_react__WEBPACK_IMPORTED_MODULE_2__, _solana_wallet_adapter_react_ui__WEBPACK_IMPORTED_MODULE_3__, _solana_wallet_adapter_wallets__WEBPACK_IMPORTED_MODULE_4__, sonner__WEBPACK_IMPORTED_MODULE_6__, _components_common_Layout__WEBPACK_IMPORTED_MODULE_8__] = __webpack_async_dependencies__.then ? (await __webpack_async_dependencies__)() : __webpack_async_dependencies__);\n// frontend/pages/_app.tsx\n\n\n\n\n\n\n\n\n\n\n__webpack_require__(/*! @solana/wallet-adapter-react-ui/styles.css */ \"../node_modules/@solana/wallet-adapter-react-ui/styles.css\");\n// Default to 'devnet' for development, you can change this based on environment\nconst network = _solana_wallet_adapter_base__WEBPACK_IMPORTED_MODULE_1__.WalletAdapterNetwork.Devnet;\nfunction MyApp({ Component, pageProps }) {\n    // Initialize wallets that you want to use\n    const wallets = (0,react__WEBPACK_IMPORTED_MODULE_7__.useMemo)({\n        \"MyApp.useMemo[wallets]\": ()=>[\n                new _solana_wallet_adapter_wallets__WEBPACK_IMPORTED_MODULE_4__.PhantomWalletAdapter(),\n                new _solana_wallet_adapter_wallets__WEBPACK_IMPORTED_MODULE_4__.SolflareWalletAdapter()\n            ]\n    }[\"MyApp.useMemo[wallets]\"], []);\n    // Initialize connection endpoint\n    const endpoint = (0,react__WEBPACK_IMPORTED_MODULE_7__.useMemo)({\n        \"MyApp.useMemo[endpoint]\": ()=>(0,_solana_web3_js__WEBPACK_IMPORTED_MODULE_5__.clusterApiUrl)(network)\n    }[\"MyApp.useMemo[endpoint]\"], [\n        network\n    ]);\n    return /*#__PURE__*/ (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxDEV)(_solana_wallet_adapter_react__WEBPACK_IMPORTED_MODULE_2__.ConnectionProvider, {\n        endpoint: endpoint,\n        children: /*#__PURE__*/ (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxDEV)(_solana_wallet_adapter_react__WEBPACK_IMPORTED_MODULE_2__.WalletProvider, {\n            wallets: wallets,\n            autoConnect: true,\n            children: /*#__PURE__*/ (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxDEV)(_solana_wallet_adapter_react_ui__WEBPACK_IMPORTED_MODULE_3__.WalletModalProvider, {\n                children: /*#__PURE__*/ (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxDEV)(_components_common_Layout__WEBPACK_IMPORTED_MODULE_8__[\"default\"], {\n                    children: [\n                        /*#__PURE__*/ (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxDEV)(Component, {\n                            ...pageProps\n                        }, void 0, false, {\n                            fileName: \"/home/db/Projects/DuelBet/frontend/pages/_app.tsx\",\n                            lineNumber: 38,\n                            columnNumber: 13\n                        }, this),\n                        /*#__PURE__*/ (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxDEV)(sonner__WEBPACK_IMPORTED_MODULE_6__.Toaster, {}, void 0, false, {\n                            fileName: \"/home/db/Projects/DuelBet/frontend/pages/_app.tsx\",\n                            lineNumber: 39,\n                            columnNumber: 13\n                        }, this)\n                    ]\n                }, void 0, true, {\n                    fileName: \"/home/db/Projects/DuelBet/frontend/pages/_app.tsx\",\n                    lineNumber: 37,\n                    columnNumber: 11\n                }, this)\n            }, void 0, false, {\n                fileName: \"/home/db/Projects/DuelBet/frontend/pages/_app.tsx\",\n                lineNumber: 36,\n                columnNumber: 9\n            }, this)\n        }, void 0, false, {\n            fileName: \"/home/db/Projects/DuelBet/frontend/pages/_app.tsx\",\n            lineNumber: 35,\n            columnNumber: 7\n        }, this)\n    }, void 0, false, {\n        fileName: \"/home/db/Projects/DuelBet/frontend/pages/_app.tsx\",\n        lineNumber: 34,\n        columnNumber: 5\n    }, this);\n}\n/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (MyApp);\n\n__webpack_async_result__();\n} catch(e) { __webpack_async_result__(e); } });//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9wYWdlcy9fYXBwLnRzeCIsIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7QUFBQSwwQkFBMEI7O0FBRXlDO0FBSTdCO0FBQ2dDO0FBSTlCO0FBQ1E7QUFDZjtBQUNEO0FBQ2dCO0FBQ25CO0FBQzdCVSxtQkFBT0EsQ0FBQyw4R0FBNEM7QUFFcEQsZ0ZBQWdGO0FBQ2hGLE1BQU1DLFVBQVVYLDZFQUFvQkEsQ0FBQ1ksTUFBTTtBQUUzQyxTQUFTQyxNQUFNLEVBQUVDLFNBQVMsRUFBRUMsU0FBUyxFQUFZO0lBQy9DLDBDQUEwQztJQUMxQyxNQUFNQyxVQUFVUiw4Q0FBT0E7a0NBQ3JCLElBQU07Z0JBQUMsSUFBSUosZ0ZBQW9CQTtnQkFBSSxJQUFJQyxpRkFBcUJBO2FBQUc7aUNBQy9ELEVBQUU7SUFHSixpQ0FBaUM7SUFDakMsTUFBTVksV0FBV1QsOENBQU9BO21DQUFDLElBQU1GLDhEQUFhQSxDQUFDSztrQ0FBVTtRQUFDQTtLQUFRO0lBRWhFLHFCQUNFLDhEQUFDViw0RUFBa0JBO1FBQUNnQixVQUFVQTtrQkFDNUIsNEVBQUNmLHdFQUFjQTtZQUFDYyxTQUFTQTtZQUFTRSxXQUFXO3NCQUMzQyw0RUFBQ2YsZ0ZBQW1CQTswQkFDbEIsNEVBQUNNLGlFQUFNQTs7c0NBQ0wsOERBQUNLOzRCQUFXLEdBQUdDLFNBQVM7Ozs7OztzQ0FDeEIsOERBQUNSLDJDQUFPQTs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7QUFNcEI7QUFFQSxpRUFBZU0sS0FBS0EsRUFBQyIsInNvdXJjZXMiOlsiL2hvbWUvZGIvUHJvamVjdHMvRHVlbEJldC9mcm9udGVuZC9wYWdlcy9fYXBwLnRzeCJdLCJzb3VyY2VzQ29udGVudCI6WyIvLyBmcm9udGVuZC9wYWdlcy9fYXBwLnRzeFxuaW1wb3J0IHsgQXBwUHJvcHMgfSBmcm9tIFwibmV4dC9hcHBcIjtcbmltcG9ydCB7IFdhbGxldEFkYXB0ZXJOZXR3b3JrIH0gZnJvbSBcIkBzb2xhbmEvd2FsbGV0LWFkYXB0ZXItYmFzZVwiO1xuaW1wb3J0IHtcbiAgQ29ubmVjdGlvblByb3ZpZGVyLFxuICBXYWxsZXRQcm92aWRlcixcbn0gZnJvbSBcIkBzb2xhbmEvd2FsbGV0LWFkYXB0ZXItcmVhY3RcIjtcbmltcG9ydCB7IFdhbGxldE1vZGFsUHJvdmlkZXIgfSBmcm9tIFwiQHNvbGFuYS93YWxsZXQtYWRhcHRlci1yZWFjdC11aVwiO1xuaW1wb3J0IHtcbiAgUGhhbnRvbVdhbGxldEFkYXB0ZXIsXG4gIFNvbGZsYXJlV2FsbGV0QWRhcHRlcixcbn0gZnJvbSBcIkBzb2xhbmEvd2FsbGV0LWFkYXB0ZXItd2FsbGV0c1wiO1xuaW1wb3J0IHsgY2x1c3RlckFwaVVybCB9IGZyb20gXCJAc29sYW5hL3dlYjMuanNcIjtcbmltcG9ydCB7IFRvYXN0ZXIgfSBmcm9tIFwic29ubmVyXCI7XG5pbXBvcnQgeyB1c2VNZW1vIH0gZnJvbSBcInJlYWN0XCI7XG5pbXBvcnQgTGF5b3V0IGZyb20gXCJAL2NvbXBvbmVudHMvY29tbW9uL0xheW91dFwiO1xuaW1wb3J0IFwiQC9zdHlsZXMvZ2xvYmFsLmNzc1wiO1xucmVxdWlyZShcIkBzb2xhbmEvd2FsbGV0LWFkYXB0ZXItcmVhY3QtdWkvc3R5bGVzLmNzc1wiKTtcblxuLy8gRGVmYXVsdCB0byAnZGV2bmV0JyBmb3IgZGV2ZWxvcG1lbnQsIHlvdSBjYW4gY2hhbmdlIHRoaXMgYmFzZWQgb24gZW52aXJvbm1lbnRcbmNvbnN0IG5ldHdvcmsgPSBXYWxsZXRBZGFwdGVyTmV0d29yay5EZXZuZXQ7XG5cbmZ1bmN0aW9uIE15QXBwKHsgQ29tcG9uZW50LCBwYWdlUHJvcHMgfTogQXBwUHJvcHMpIHtcbiAgLy8gSW5pdGlhbGl6ZSB3YWxsZXRzIHRoYXQgeW91IHdhbnQgdG8gdXNlXG4gIGNvbnN0IHdhbGxldHMgPSB1c2VNZW1vKFxuICAgICgpID0+IFtuZXcgUGhhbnRvbVdhbGxldEFkYXB0ZXIoKSwgbmV3IFNvbGZsYXJlV2FsbGV0QWRhcHRlcigpXSxcbiAgICBbXVxuICApO1xuXG4gIC8vIEluaXRpYWxpemUgY29ubmVjdGlvbiBlbmRwb2ludFxuICBjb25zdCBlbmRwb2ludCA9IHVzZU1lbW8oKCkgPT4gY2x1c3RlckFwaVVybChuZXR3b3JrKSwgW25ldHdvcmtdKTtcblxuICByZXR1cm4gKFxuICAgIDxDb25uZWN0aW9uUHJvdmlkZXIgZW5kcG9pbnQ9e2VuZHBvaW50fT5cbiAgICAgIDxXYWxsZXRQcm92aWRlciB3YWxsZXRzPXt3YWxsZXRzfSBhdXRvQ29ubmVjdD5cbiAgICAgICAgPFdhbGxldE1vZGFsUHJvdmlkZXI+XG4gICAgICAgICAgPExheW91dD5cbiAgICAgICAgICAgIDxDb21wb25lbnQgey4uLnBhZ2VQcm9wc30gLz5cbiAgICAgICAgICAgIDxUb2FzdGVyIC8+XG4gICAgICAgICAgPC9MYXlvdXQ+XG4gICAgICAgIDwvV2FsbGV0TW9kYWxQcm92aWRlcj5cbiAgICAgIDwvV2FsbGV0UHJvdmlkZXI+XG4gICAgPC9Db25uZWN0aW9uUHJvdmlkZXI+XG4gICk7XG59XG5cbmV4cG9ydCBkZWZhdWx0IE15QXBwO1xuIl0sIm5hbWVzIjpbIldhbGxldEFkYXB0ZXJOZXR3b3JrIiwiQ29ubmVjdGlvblByb3ZpZGVyIiwiV2FsbGV0UHJvdmlkZXIiLCJXYWxsZXRNb2RhbFByb3ZpZGVyIiwiUGhhbnRvbVdhbGxldEFkYXB0ZXIiLCJTb2xmbGFyZVdhbGxldEFkYXB0ZXIiLCJjbHVzdGVyQXBpVXJsIiwiVG9hc3RlciIsInVzZU1lbW8iLCJMYXlvdXQiLCJyZXF1aXJlIiwibmV0d29yayIsIkRldm5ldCIsIk15QXBwIiwiQ29tcG9uZW50IiwicGFnZVByb3BzIiwid2FsbGV0cyIsImVuZHBvaW50IiwiYXV0b0Nvbm5lY3QiXSwiaWdub3JlTGlzdCI6W10sInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///./pages/_app.tsx\n");
 
 /***/ }),
 
@@ -63,6 +63,127 @@ eval("__webpack_require__.a(module, async (__webpack_handle_async_dependencies__
 
 "use strict";
 module.exports = require("@opentelemetry/api");
+
+/***/ }),
+
+/***/ "@solana/web3.js":
+/*!**********************************!*\
+  !*** external "@solana/web3.js" ***!
+  \**********************************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("@solana/web3.js");
+
+/***/ }),
+
+/***/ "next/dist/compiled/next-server/pages.runtime.dev.js":
+/*!**********************************************************************!*\
+  !*** external "next/dist/compiled/next-server/pages.runtime.dev.js" ***!
+  \**********************************************************************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("next/dist/compiled/next-server/pages.runtime.dev.js");
+
+/***/ }),
+
+/***/ "react":
+/*!************************!*\
+  !*** external "react" ***!
+  \************************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("react");
+
+/***/ }),
+
+/***/ "react-dom":
+/*!****************************!*\
+  !*** external "react-dom" ***!
+  \****************************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("react-dom");
+
+/***/ }),
+
+/***/ "react/jsx-dev-runtime":
+/*!****************************************!*\
+  !*** external "react/jsx-dev-runtime" ***!
+  \****************************************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("react/jsx-dev-runtime");
+
+/***/ }),
+
+/***/ "react/jsx-runtime":
+/*!************************************!*\
+  !*** external "react/jsx-runtime" ***!
+  \************************************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("react/jsx-runtime");
+
+/***/ }),
+
+/***/ "fs":
+/*!*********************!*\
+  !*** external "fs" ***!
+  \*********************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("fs");
+
+/***/ }),
+
+/***/ "path":
+/*!***********************!*\
+  !*** external "path" ***!
+  \***********************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("path");
+
+/***/ }),
+
+/***/ "stream":
+/*!*************************!*\
+  !*** external "stream" ***!
+  \*************************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("stream");
+
+/***/ }),
+
+/***/ "zlib":
+/*!***********************!*\
+  !*** external "zlib" ***!
+  \***********************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("zlib");
+
+/***/ }),
+
+/***/ "@solana/wallet-adapter-base":
+/*!**********************************************!*\
+  !*** external "@solana/wallet-adapter-base" ***!
+  \**********************************************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = import("@solana/wallet-adapter-base");;
 
 /***/ }),
 
@@ -99,124 +220,14 @@ module.exports = import("@solana/wallet-adapter-wallets");;
 
 /***/ }),
 
-/***/ "@solana/web3.js":
-/*!**********************************!*\
-  !*** external "@solana/web3.js" ***!
-  \**********************************/
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("@solana/web3.js");
-
-/***/ }),
-
-/***/ "fs":
-/*!*********************!*\
-  !*** external "fs" ***!
-  \*********************/
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("fs");
-
-/***/ }),
-
-/***/ "next/dist/compiled/next-server/pages.runtime.dev.js":
-/*!**********************************************************************!*\
-  !*** external "next/dist/compiled/next-server/pages.runtime.dev.js" ***!
-  \**********************************************************************/
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("next/dist/compiled/next-server/pages.runtime.dev.js");
-
-/***/ }),
-
-/***/ "path":
-/*!***********************!*\
-  !*** external "path" ***!
-  \***********************/
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("path");
-
-/***/ }),
-
-/***/ "react":
-/*!************************!*\
-  !*** external "react" ***!
-  \************************/
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("react");
-
-/***/ }),
-
-/***/ "react-dom":
-/*!****************************!*\
-  !*** external "react-dom" ***!
-  \****************************/
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("react-dom");
-
-/***/ }),
-
-/***/ "react-hot-toast":
-/*!**********************************!*\
-  !*** external "react-hot-toast" ***!
-  \**********************************/
-/***/ ((module) => {
-
-"use strict";
-module.exports = import("react-hot-toast");;
-
-/***/ }),
-
-/***/ "react/jsx-dev-runtime":
-/*!****************************************!*\
-  !*** external "react/jsx-dev-runtime" ***!
-  \****************************************/
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("react/jsx-dev-runtime");
-
-/***/ }),
-
-/***/ "react/jsx-runtime":
-/*!************************************!*\
-  !*** external "react/jsx-runtime" ***!
-  \************************************/
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("react/jsx-runtime");
-
-/***/ }),
-
-/***/ "stream":
+/***/ "sonner":
 /*!*************************!*\
-  !*** external "stream" ***!
+  !*** external "sonner" ***!
   \*************************/
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("stream");
-
-/***/ }),
-
-/***/ "zlib":
-/*!***********************!*\
-  !*** external "zlib" ***!
-  \***********************/
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("zlib");
+module.exports = import("sonner");;
 
 /***/ })
 

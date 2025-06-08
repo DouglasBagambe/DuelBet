@@ -2,17 +2,81 @@ import { PublicKey } from "@solana/web3.js";
 
 // Player related types
 export interface LichessPlayer {
-  id: string; // Lichess user ID
-  username: string; // Lichess username
+  id: string;
+  username: string;
+  rating?: number;
+  title?: string;
+  online?: boolean;
+  playing?: boolean;
+  provisional?: boolean;
+  patron?: boolean;
+  createdAt?: number;
+  seenAt?: number;
+  playTime?: {
+    total: number;
+    tv: number;
+  };
+  url?: string;
+  count?: {
+    all: number;
+    rated: number;
+    ai: number;
+    draw: number;
+    drawH: number;
+    loss: number;
+    lossH: number;
+    win: number;
+    winH: number;
+    bookmark: number;
+    playing: number;
+    import: number;
+    me: number;
+  };
+  followable?: boolean;
+  following?: boolean;
+  blocking?: boolean;
+  followsYou?: boolean;
 }
 
 // Match related types
 export interface Match {
-  id: string; // Lichess game ID
-  timestamp: number; // Game creation or last move timestamp (e.g., createdAt or lastMoveAt)
-  gameType: string; // e.g., "Bullet", "Blitz", "Rapid" (from speed)
-  result: "win" | "loss" | "draw"; // Based on winner or status
-  variant: string; // e.g., "Standard", "Chess960" (from variant field)
+  id: string;
+  rated: boolean;
+  variant: string;
+  speed: string;
+  perf: string;
+  createdAt: number;
+  lastMoveAt: number;
+  status: string;
+  players: {
+    white: {
+      user: {
+        name: string;
+        title?: string;
+        patron?: boolean;
+        id: string;
+      };
+      rating: number;
+      provisional?: boolean;
+    };
+    black: {
+      user: {
+        name: string;
+        title?: string;
+        patron?: boolean;
+        id: string;
+      };
+      rating: number;
+      provisional?: boolean;
+    };
+  };
+  winner?: "white" | "black";
+  moves: string;
+  clock: {
+    initial: number;
+    increment: number;
+    totalTime: number;
+  };
 }
 
 // Challenge related types
@@ -114,26 +178,49 @@ export interface ChallengeCompletedEvent {
   lichessUsername: string; // Added for consistency with Lichess
 }
 
-export interface Challenge {
-  id: string;
-  creator: string; // Solana public key
-  lichessUsername: string;
+export type Challenge = {
+  creator: string;
+  challenger: string | null;
   wagerAmount: number;
-  challenger?: string; // Solana public key
-  isComplete?: boolean;
-  isActive: boolean;
-  metadata: string; // Added for game-specific data (e.g., Lichess link)
-  stats?: LichessMatchStats;
-  variant?: { key: string; name: string; short: string }; // Add this
-  speed?: string; // Add this
-  timeControl?: {
-    limit: number;
+  lichessGameId: string;
+  timeControl: {
+    initialTime: number;
     increment: number;
-    show: string;
-    type: string;
-  }; // Add this
-  color?: string; // Add this
-  rated?: boolean; // Add this
-  status?: string; // Add this for "offline" or other statuses
-  createdAt: number;
+    variant: number;
+  };
+  status: number;
+  winner: string | null;
+  lichessResult: {
+    gameId: string;
+    winner: string;
+    termination: string;
+    moves: string;
+    signature: string;
+  } | null;
+};
+
+export interface LichessResult {
+  gameId: string;
+  winner: string;
+  termination: string;
+  moves: string;
+  signature: string;
+}
+
+export interface TimeControl {
+  initialTime: number;
+  increment: number;
+  variant: GameVariant;
+}
+
+export enum GameVariant {
+  Standard = 0,
+  Chess960 = 1,
+  Crazyhouse = 2,
+  Antichess = 3,
+  Atomic = 4,
+  Horde = 5,
+  KingOfTheHill = 6,
+  RacingKings = 7,
+  ThreeCheck = 8,
 }

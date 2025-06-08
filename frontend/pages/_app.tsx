@@ -1,39 +1,34 @@
 // frontend/pages/_app.tsx
 import { AppProps } from "next/app";
-import { useMemo } from "react";
-import { WalletProvider } from "@solana/wallet-adapter-react";
+import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
+import {
+  ConnectionProvider,
+  WalletProvider,
+} from "@solana/wallet-adapter-react";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import {
   PhantomWalletAdapter,
   SolflareWalletAdapter,
-  TorusWalletAdapter,
 } from "@solana/wallet-adapter-wallets";
 import { clusterApiUrl } from "@solana/web3.js";
-import { ConnectionProvider } from "@solana/wallet-adapter-react";
-import { Toaster } from "react-hot-toast";
+import { Toaster } from "sonner";
+import { useMemo } from "react";
 import Layout from "@/components/common/Layout";
 import "@/styles/global.css";
 require("@solana/wallet-adapter-react-ui/styles.css");
 
 // Default to 'devnet' for development, you can change this based on environment
-const network = process.env.NEXT_PUBLIC_SOLANA_NETWORK || "devnet";
+const network = WalletAdapterNetwork.Devnet;
 
 function MyApp({ Component, pageProps }: AppProps) {
   // Initialize wallets that you want to use
   const wallets = useMemo(
-    () => [
-      new PhantomWalletAdapter(),
-      new SolflareWalletAdapter(),
-      new TorusWalletAdapter(),
-    ],
-    [network]
+    () => [new PhantomWalletAdapter(), new SolflareWalletAdapter()],
+    []
   );
 
   // Initialize connection endpoint
-  const endpoint = useMemo(
-    () => clusterApiUrl(network as "devnet" | "testnet" | "mainnet-beta"),
-    [network]
-  );
+  const endpoint = useMemo(() => clusterApiUrl(network), [network]);
 
   return (
     <ConnectionProvider endpoint={endpoint}>
@@ -41,21 +36,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         <WalletModalProvider>
           <Layout>
             <Component {...pageProps} />
-            <Toaster
-              position="bottom-right"
-              toastOptions={{
-                style: {
-                  background: "#333",
-                  color: "#fff",
-                },
-                success: {
-                  duration: 3000,
-                },
-                error: {
-                  duration: 4000,
-                },
-              }}
-            />
+            <Toaster />
           </Layout>
         </WalletModalProvider>
       </WalletProvider>
